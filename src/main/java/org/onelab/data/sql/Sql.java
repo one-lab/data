@@ -8,7 +8,8 @@ public class Sql {
   private String sql;
   private Object[] params;
 
-  public Sql() {}
+  public Sql() {
+  }
 
   public Sql(String sql, Object[] params) {
     this.sql = sql;

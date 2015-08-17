@@ -20,7 +20,7 @@ public class FindParser extends SqlParser {
   public Sql parseSql() {
     StringBuilder sb = new StringBuilder(SELECT);
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
-    for (int i=0,len=columns.size();i<len;i++){
+    for (int i = 0, len = columns.size(); i < len; i++) {
       sb.append(columns.get(i).name()).append(",");
     }
     sb.replace(sb.length() - 1, sb.length(), "");

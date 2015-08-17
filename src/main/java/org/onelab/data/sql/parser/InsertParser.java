@@ -33,20 +33,20 @@ public class InsertParser extends SqlParser {
     return sql.toString();
   }
 
-  private StringBuilder fields(){
+  private StringBuilder fields() {
     StringBuilder sb = new StringBuilder("(");
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
-    for (Column column:columns){
+    for (Column column : columns) {
       sb.append(column.name()).append(",");
     }
     sb.replace(sb.length() - 1, sb.length(), ")");
     return sb;
   }
 
-  private StringBuilder values(){
+  private StringBuilder values() {
     StringBuilder sb = new StringBuilder("(");
     int len = entityMeta.columnLength();
-    while (len-- > 0){
+    while (len-- > 0) {
       sb.append("?").append(",");
     }
     sb.replace(sb.length() - 1, sb.length(), ")");
@@ -56,11 +56,11 @@ public class InsertParser extends SqlParser {
   private Object[] getParams() {
     Object[] params = new Object[entityMeta.columnLength()];
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
-    for (int i=0,len=columns.size();i<len;i++){
+    for (int i = 0, len = columns.size(); i < len; i++) {
       params[i] = EntityMetaManager
           .getValueByColumn(entityMeta, entity, columns.get(i));
     }
-    if (params[0]==null){
+    if (params[0] == null) {
       params[0] = getIdValue();
     }
     return params;
@@ -68,13 +68,11 @@ public class InsertParser extends SqlParser {
 
   /**
    * 获取ID的值
-   * @return
-   * @throws IllegalAccessException
    */
   private Object getIdValue() {
     Object idValue = EntityMetaManager.getIdValue(entityMeta, entity);
     // TODO 将来此处判断ID生成策略
-    if (idValue==null){
+    if (idValue == null) {
       idValue = UUID.randomUUID().toString();
     }
     return idValue;

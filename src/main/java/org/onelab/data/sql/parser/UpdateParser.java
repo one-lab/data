@@ -2,7 +2,9 @@ package org.onelab.data.sql.parser;
 
 import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.sql.Sql;
+
 import java.util.List;
+
 import javax.persistence.Column;
 
 /**
@@ -33,10 +35,10 @@ public class UpdateParser extends SqlParser {
     return sql.toString();
   }
 
-  private StringBuilder values(){
+  private StringBuilder values() {
     StringBuilder sb = new StringBuilder();
     List<Column> columns = entityMeta.getNormalColumns();
-    for (Column column:columns){
+    for (Column column : columns) {
       sb.append(column.name()).append("=?,");
     }
     sb.replace(sb.length() - 1, sb.length(), "");
@@ -46,12 +48,12 @@ public class UpdateParser extends SqlParser {
   public Object[] getParams() {
     Object[] params = new Object[entityMeta.columnLength()];
     List<Column> columns = entityMeta.getNormalColumns();
-    int i=0;
-    for (Column column:columns){
-      params[i] = EntityMetaManager.getValueByColumn(entityMeta,entity,column);
+    int i = 0;
+    for (Column column : columns) {
+      params[i] = EntityMetaManager.getValueByColumn(entityMeta, entity, column);
       i++;
     }
-    params[i] = EntityMetaManager.getIdValue(entityMeta,entity);
+    params[i] = EntityMetaManager.getIdValue(entityMeta, entity);
     return params;
   }
 }

@@ -1,14 +1,14 @@
 package org.onelab.data;
 
+import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.query.ArrayProducer;
 import org.onelab.data.query.MapProducer;
 import org.onelab.data.query.EntityProducer;
+import org.onelab.data.query.ObjectProducer;
 import org.onelab.data.query.ResultProducer;
 import org.onelab.data.sql.Sql;
 import org.onelab.data.sql.SqlRander;
 import org.onelab.data.sql.SqlType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,11 +23,10 @@ import java.util.Map;
  */
 public class Session {
 
-  static Logger logger = LoggerFactory.getLogger(Session.class);
   ConnectionPool connectionPool = null;
 
-  public Session(ConnectionPool connectionPool){
-    if (connectionPool==null){
+  public Session(ConnectionPool connectionPool) {
+    if (connectionPool == null) {
       throw new RuntimeException("ConnectionPool is null");
     }
     this.connectionPool = connectionPool;
@@ -40,14 +39,13 @@ public class Session {
       int res = pstm.executeUpdate();
       return res;
     } catch (SQLException e) {
-      logger.error("更新数据失败:sql is "+sql,e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("更新数据失败:sql is " + sql, e);
     } finally {
       connectionPool.close(pstm);
     }
   }
 
-  public<T> List<T> executeQuery(String sql, Object[] params, ResultProducer<T> producer) {
+  public <T> List<T> executeQuery(String sql, Object[] params, ResultProducer<T> producer) {
     List<T> resultList = new ArrayList<T>(0);
     PreparedStatement pstm = connectionPool.getPreparedStatement(sql, params);
     ResultSet resultSet = null;
@@ -55,58 +53,58 @@ public class Session {
       resultSet = pstm.executeQuery();
       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
       int len = resultSetMetaData.getColumnCount();
-      int i=0;
+      int i = 0;
       while (resultSet.next()) {
-        resultList.add(producer.produce(resultSetMetaData,resultSet,len,i++));
+        resultList.add(producer.produce(resultSetMetaData, resultSet, len, i++));
       }
     } catch (SQLException e) {
-      logger.error("查询数据失败:sql["+sql+"]",e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("查询数据失败:sql[" + sql + "]", e);
     } finally {
       connectionPool.close(pstm, resultSet);
     }
     return resultList;
   }
 
-  public<T> T insert(T entity){
-    Sql sql = SqlRander.rander(SqlType.INSERT,entity.getClass(),entity);
-    executeUpdate(sql.getSql(),sql.getParams());
+  public <T> T insert(T entity) {
+    Sql sql = SqlRander.rander(SqlType.INSERT, entity.getClass(), entity);
+    executeUpdate(sql.getSql(), sql.getParams());
+    EntityMetaManager.testInsertId(entity, sql.getParams());
     return entity;
   }
 
-  public<T> void update(T entity){
-    Sql sql = SqlRander.rander(SqlType.UPDATE,entity.getClass(),entity);
-    executeUpdate(sql.getSql(),sql.getParams());
+  public <T> void update(T entity) {
+    Sql sql = SqlRander.rander(SqlType.UPDATE, entity.getClass(), entity);
+    executeUpdate(sql.getSql(), sql.getParams());
   }
 
-  public<T> void delete(Class<T> clazz, Object id){
-    Sql sql = SqlRander.rander(SqlType.DELETE,clazz,id);
-    executeUpdate(sql.getSql(),sql.getParams());
+  public <T> void delete(Class<T> clazz, Object id) {
+    Sql sql = SqlRander.rander(SqlType.DELETE, clazz, id);
+    executeUpdate(sql.getSql(), sql.getParams());
   }
 
-  public<T> T find(Class<T> clazz,Object id){
-    Sql sql = SqlRander.rander(SqlType.FIND,clazz,id);
-    List<T> resultList = executeQuery(sql.getSql(), sql.getParams(),new EntityProducer<T>(clazz));
-    if (resultList.size()>0){
+  public <T> T find(Class<T> clazz, Object id) {
+    Sql sql = SqlRander.rander(SqlType.FIND, clazz, id);
+    List<T> resultList = executeQuery(sql.getSql(), sql.getParams(), new EntityProducer<T>(clazz));
+    if (resultList.size() > 0) {
       return resultList.get(0);
     }
     return null;
   }
 
-  public<T> List<T> findAll(Class<T> clazz){
-    Sql sql = SqlRander.rander(SqlType.FINDALL, clazz, null);
-    return executeQuery(sql.getSql(), sql.getParams(),new EntityProducer<T>(clazz));
+  public <T> List<T> findAll(Class<T> clazz) {
+    Sql sql = SqlRander.rander(SqlType.FIND_ALL, clazz, null);
+    return executeQuery(sql.getSql(), sql.getParams(), new EntityProducer<T>(clazz));
   }
 
-  public List<Map<String,Object>> queryAsMap(String sql, Object[] params){
+  public List<Map<String, Object>> queryAsMap(String sql, Object[] params) {
     return executeQuery(sql, params, new MapProducer());
   }
 
-  public List<Object[]> queryAsArray(String sql, Object[] params){
+  public List<Object[]> queryAsArray(String sql, Object[] params) {
     return executeQuery(sql, params, new ArrayProducer());
   }
 
-//  public<T> List<T> queryAsObject(String sql, Object[] params){
-//    return executeQuery(sql, params, new EntityProducer<T>());
-//  }
+  public <T> List<T> queryAsObject(Class<T> clazz, String sql, Object[] params) {
+    return executeQuery(sql, params, new ObjectProducer<T>(clazz));
+  }
 }

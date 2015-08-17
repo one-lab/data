@@ -1,7 +1,7 @@
 package org.onelab.data.sql.parser;
 
 import org.onelab.data.meta.EntityMeta;
-import org.onelab.data.meta.EntityMetaStore;
+import org.onelab.data.meta.store.EntityMetaStore;
 import org.onelab.data.sql.Sql;
 import org.onelab.data.sql.SqlType;
 
@@ -13,9 +13,9 @@ public abstract class SqlParser {
   protected Object entity;
   protected EntityMeta entityMeta;
 
-  public static SqlParser buildParser(SqlType sqlType,Class clazz,Object entity){
+  public static SqlParser buildParser(SqlType sqlType, Class clazz, Object entity) {
     SqlParser parser = null;
-    switch (sqlType){
+    switch (sqlType) {
       case INSERT:
         parser = new InsertParser();
         break;
@@ -28,10 +28,10 @@ public abstract class SqlParser {
       case FIND:
         parser = new FindParser();
         break;
-      case FINDALL:
+      case FIND_ALL:
         parser = new FindAllParser();
     }
-    if (parser!=null){
+    if (parser != null) {
       parser.entity = entity;
       parser.entityMeta = EntityMetaStore.getEntityMeta(clazz);
     }
@@ -40,7 +40,6 @@ public abstract class SqlParser {
 
   /**
    * 生成SQL
-   * @return
    */
   abstract public Sql parseSql();
 }

@@ -4,6 +4,7 @@ package org.onelab.data;
  * @author Chunliang.Han on 15/8/15.
  */
 public class Config {
+
   private String id;
   private String url;
   private String user;
