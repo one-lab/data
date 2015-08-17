@@ -8,6 +8,7 @@ import java.util.List;
 import javax.persistence.Column;
 
 /**
+ * 修改语句生成器
  * @author Chunliang.Han on 15/8/15.
  */
 public class UpdateParser extends SqlParser {
@@ -50,10 +51,10 @@ public class UpdateParser extends SqlParser {
     List<Column> columns = entityMeta.getNormalColumns();
     int i = 0;
     for (Column column : columns) {
-      params[i] = EntityMetaManager.getValueByColumn(entityMeta, entity, column);
+      params[i] = EntityMetaManager.getValueByColumn(entityMeta, data, column);
       i++;
     }
-    params[i] = EntityMetaManager.getIdValue(entityMeta, entity);
+    params[i] = EntityMetaManager.getIdValue(entityMeta, data);
     return params;
   }
 }

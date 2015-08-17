@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 类描述对象
+ * 存储属性名和属性的对应关系
  * @author Chunliang.Han on 15/8/17.
  */
-public class ObjectMeta {
+public class BeanMeta {
 
   /**
-   * 对应 entity 的 class
+   * 对应 data 的 class
    */
   private Class entityClass;
   /**

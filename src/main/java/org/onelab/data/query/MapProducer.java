@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 映射表处理器
+ * 将查询结果ResultSet的指定行转换成相应映射表
  * @author Chunliang.Han on 15/8/15.
  */
 public class MapProducer implements ResultProducer<Map<String, Object>> {

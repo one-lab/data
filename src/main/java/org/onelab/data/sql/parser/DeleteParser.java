@@ -4,6 +4,7 @@ import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.sql.Sql;
 
 /**
+ * 删除语句生成器
  * @author Chunliang.Han on 15/8/15.
  */
 public class DeleteParser extends SqlParser {
@@ -20,7 +21,7 @@ public class DeleteParser extends SqlParser {
         .append("=?");
     Sql sql = new Sql();
     sql.setSql(sb.toString());
-    sql.setParams(new Object[]{entity});
+    sql.setParams(new Object[]{data});
     return sql;
   }
 }

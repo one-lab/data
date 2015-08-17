@@ -8,6 +8,7 @@ import java.util.List;
 import javax.persistence.Column;
 
 /**
+ * 查询全部语句生成器
  * @author Chunliang.Han on 15/8/15.
  */
 public class FindAllParser extends SqlParser {

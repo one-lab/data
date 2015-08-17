@@ -8,6 +8,7 @@ import java.util.List;
 import javax.persistence.Column;
 
 /**
+ * 查询语句生成器
  * @author Chunliang.Han on 15/8/15.
  */
 public class FindParser extends SqlParser {
@@ -31,7 +32,7 @@ public class FindParser extends SqlParser {
         .append("=?");
     Sql sql = new Sql();
     sql.setSql(sb.toString());
-    sql.setParams(new Object[]{entity});
+    sql.setParams(new Object[]{data});
     return sql;
   }
 }

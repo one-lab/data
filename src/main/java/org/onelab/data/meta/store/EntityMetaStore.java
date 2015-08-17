@@ -2,7 +2,6 @@ package org.onelab.data.meta.store;
 
 import org.onelab.data.meta.EntityMeta;
 import org.onelab.data.meta.IDMeta;
-import org.onelab.data.meta.ObjectMeta;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -13,7 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * 类描述对象生成存储器
+ * 实体类描述对象生成存储器
  *
  * @author Chunliang.Han on 15/8/10.
  */
@@ -21,6 +20,11 @@ public class EntityMetaStore {
 
   public static final Map<Class, EntityMeta> local = new HashMap<Class, EntityMeta>(0);
 
+  /**
+   * 生成实体描述对象
+   * @param clazz
+   * @return
+   */
   private static EntityMeta createEntityMeta(Class clazz) {
     EntityMeta entityMeta = new EntityMeta();
     entityMeta.setEntityClass(clazz);
@@ -45,6 +49,12 @@ public class EntityMetaStore {
     return entityMeta;
   }
 
+  /**
+   * 获取实体描述对象
+   * 如果本地缓存中没有则创建并装入缓存
+   * @param clazz
+   * @return
+   */
   public static EntityMeta getEntityMeta(Class clazz) {
     EntityMeta entityMeta = local.get(clazz);
     if (entityMeta == null) {
@@ -52,7 +62,7 @@ public class EntityMetaStore {
       local.put(clazz, entityMeta);
     }
     if (entityMeta.getTable() == null) {
-      throw new RuntimeException("entity " + clazz + " must has Column annotation !");
+      throw new RuntimeException("data " + clazz + " must has Column annotation !");
     }
     return entityMeta;
   }

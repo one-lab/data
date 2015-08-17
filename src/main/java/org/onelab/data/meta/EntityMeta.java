@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author Chunliang.Han on 15/8/10.
  * @note 1.实体属性名称不区分大小写 2.认为有Column注解的字段为表字段。
  */
-public class EntityMeta extends ObjectMeta {
+public class EntityMeta extends BeanMeta {
 
   /**
    * ID 描述信息

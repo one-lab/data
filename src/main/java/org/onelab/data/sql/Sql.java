@@ -1,6 +1,7 @@
 package org.onelab.data.sql;
 
 /**
+ * SQL对象，包含指定SQL模板及参数
  * @author Chunliang.Han on 15/8/10.
  */
 public class Sql {

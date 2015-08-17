@@ -4,7 +4,7 @@ import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.query.ArrayProducer;
 import org.onelab.data.query.MapProducer;
 import org.onelab.data.query.EntityProducer;
-import org.onelab.data.query.ObjectProducer;
+import org.onelab.data.query.BeanProducer;
 import org.onelab.data.query.ResultProducer;
 import org.onelab.data.sql.Sql;
 import org.onelab.data.sql.SqlRander;
@@ -19,12 +19,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 会话
  * @author Chunliang.Han on 15/8/10.
  */
 public class Session {
 
   ConnectionPool connectionPool = null;
 
+  /**
+   * 创建会话，只允许通过连接池创建会话，不提供无参构造子
+   * @param connectionPool
+   */
   public Session(ConnectionPool connectionPool) {
     if (connectionPool == null) {
       throw new RuntimeException("ConnectionPool is null");
@@ -32,6 +37,12 @@ public class Session {
     this.connectionPool = connectionPool;
   }
 
+  /**
+   * 基本更新
+   * @param sql
+   * @param params
+   * @return
+   */
   public int executeUpdate(String sql, Object[] params) {
 
     PreparedStatement pstm = connectionPool.getPreparedStatement(sql, params);
@@ -45,6 +56,14 @@ public class Session {
     }
   }
 
+  /**
+   * 基本查询
+   * @param sql
+   * @param params
+   * @param producer
+   * @param <T>
+   * @return
+   */
   public <T> List<T> executeQuery(String sql, Object[] params, ResultProducer<T> producer) {
     List<T> resultList = new ArrayList<T>(0);
     PreparedStatement pstm = connectionPool.getPreparedStatement(sql, params);
@@ -65,6 +84,12 @@ public class Session {
     return resultList;
   }
 
+  /**
+   * 插入实体
+   * @param entity
+   * @param <T>
+   * @return
+   */
   public <T> T insert(T entity) {
     Sql sql = SqlRander.rander(SqlType.INSERT, entity.getClass(), entity);
     executeUpdate(sql.getSql(), sql.getParams());
@@ -72,16 +97,34 @@ public class Session {
     return entity;
   }
 
+  /**
+   * 更新实体
+   * @param entity
+   * @param <T>
+   */
   public <T> void update(T entity) {
     Sql sql = SqlRander.rander(SqlType.UPDATE, entity.getClass(), entity);
     executeUpdate(sql.getSql(), sql.getParams());
   }
 
+  /**
+   * 删除实体
+   * @param clazz
+   * @param id
+   * @param <T>
+   */
   public <T> void delete(Class<T> clazz, Object id) {
     Sql sql = SqlRander.rander(SqlType.DELETE, clazz, id);
     executeUpdate(sql.getSql(), sql.getParams());
   }
 
+  /**
+   * 根据ID查询实体
+   * @param clazz
+   * @param id
+   * @param <T>
+   * @return
+   */
   public <T> T find(Class<T> clazz, Object id) {
     Sql sql = SqlRander.rander(SqlType.FIND, clazz, id);
     List<T> resultList = executeQuery(sql.getSql(), sql.getParams(), new EntityProducer<T>(clazz));
@@ -91,20 +134,76 @@ public class Session {
     return null;
   }
 
+  /**
+   * 查询全部实体
+   * @param clazz
+   * @param <T>
+   * @return
+   */
   public <T> List<T> findAll(Class<T> clazz) {
     Sql sql = SqlRander.rander(SqlType.FIND_ALL, clazz, null);
     return executeQuery(sql.getSql(), sql.getParams(), new EntityProducer<T>(clazz));
   }
 
-  public List<Map<String, Object>> queryAsMap(String sql, Object[] params) {
+  /**
+   * 返回条目为Map的查询
+   * @param sql
+   * @param params
+   * @return
+   */
+  public List<Map<String, Object>> queryListMap(String sql, Object[] params) {
     return executeQuery(sql, params, new MapProducer());
   }
 
-  public List<Object[]> queryAsArray(String sql, Object[] params) {
+  public Map<String, Object> queryOneMap(String sql, Object[] params) {
+    List<Map<String, Object>> resultList = queryListMap(sql, params);
+    return resultList.size()>0?resultList.get(0):null;
+  }
+
+  /**
+   * 返回条目为数组的查询
+   * @param sql
+   * @param params
+   * @return
+   */
+  public List<Object[]> queryListArray(String sql, Object[] params) {
     return executeQuery(sql, params, new ArrayProducer());
   }
 
-  public <T> List<T> queryAsObject(Class<T> clazz, String sql, Object[] params) {
-    return executeQuery(sql, params, new ObjectProducer<T>(clazz));
+  public Object[] queryOneArray(String sql, Object[] params) {
+    List<Object[]> resultList = queryListArray(sql, params);
+    return resultList.size()>0?resultList.get(0):null;
+  }
+
+  /**
+   * 返回条目为对象的查询
+   * @param clazz
+   * @param sql
+   * @param params
+   * @param <T>
+   * @return
+   */
+  public <T> List<T> queryListBean(Class<T> clazz, String sql, Object[] params) {
+    return executeQuery(sql, params, new BeanProducer<T>(clazz));
+  }
+
+  public <T> T queryOneBean(Class<T> clazz, String sql, Object[] params) {
+    List<T> resultList = queryListBean(clazz, sql, params);
+    return resultList.size()>0?resultList.get(0):null;
+  }
+
+  /**
+   * 获取单一值
+   * @param sql
+   * @param params
+   * @param <T>
+   * @return
+   */
+  public <T> T querySingleValue(String sql, Object[] params){
+    Object[] res = queryOneArray(sql, params);
+    if (res!=null){
+      return (T) res[0];
+    }
+    return null;
   }
 }

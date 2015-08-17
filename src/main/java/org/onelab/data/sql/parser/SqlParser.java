@@ -6,14 +6,22 @@ import org.onelab.data.sql.Sql;
 import org.onelab.data.sql.SqlType;
 
 /**
+ * SQL生成器
+ * 根据实体描述对象和相应数据生成指定SQL
  * @author Chunliang.Han on 15/8/10.
  */
 public abstract class SqlParser {
 
-  protected Object entity;
+  /**
+   * 相关数据
+   */
+  protected Object data;
+  /**
+   * 实体描述对象
+   */
   protected EntityMeta entityMeta;
 
-  public static SqlParser buildParser(SqlType sqlType, Class clazz, Object entity) {
+  public static SqlParser buildParser(SqlType sqlType, Class clazz, Object data) {
     SqlParser parser = null;
     switch (sqlType) {
       case INSERT:
@@ -32,7 +40,7 @@ public abstract class SqlParser {
         parser = new FindAllParser();
     }
     if (parser != null) {
-      parser.entity = entity;
+      parser.data = data;
       parser.entityMeta = EntityMetaStore.getEntityMeta(clazz);
     }
     return parser;

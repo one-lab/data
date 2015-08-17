@@ -9,6 +9,7 @@ import java.util.UUID;
 import javax.persistence.Column;
 
 /**
+ * 插入语句生成器
  * @author Chunliang.Han on 15/8/10.
  */
 public class InsertParser extends SqlParser {
@@ -58,7 +59,7 @@ public class InsertParser extends SqlParser {
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
     for (int i = 0, len = columns.size(); i < len; i++) {
       params[i] = EntityMetaManager
-          .getValueByColumn(entityMeta, entity, columns.get(i));
+          .getValueByColumn(entityMeta, data, columns.get(i));
     }
     if (params[0] == null) {
       params[0] = getIdValue();
@@ -70,7 +71,7 @@ public class InsertParser extends SqlParser {
    * 获取ID的值
    */
   private Object getIdValue() {
-    Object idValue = EntityMetaManager.getIdValue(entityMeta, entity);
+    Object idValue = EntityMetaManager.getIdValue(entityMeta, data);
     // TODO 将来此处判断ID生成策略
     if (idValue == null) {
       idValue = UUID.randomUUID().toString();

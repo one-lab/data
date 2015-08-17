@@ -10,6 +10,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
+ * 实体处理器
+ * 将查询结果ResultSet的指定行转换成相应实体
  * @author Chunliang.Han on 15/8/15.
  */
 public class EntityProducer<T> implements ResultProducer<T> {

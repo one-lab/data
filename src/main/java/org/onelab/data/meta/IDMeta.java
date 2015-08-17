@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import javax.persistence.Column;
 
 /**
+ * ID描述对象
  * @author Chunliang.Han on 15/8/15.
  */
 public class IDMeta {

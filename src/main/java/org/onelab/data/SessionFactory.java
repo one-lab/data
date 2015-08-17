@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 会话工厂
+ * 相同配置ID的会话只创建一个
  * @author Chunliang.Han on 15/7/16.
  */
 public class SessionFactory {

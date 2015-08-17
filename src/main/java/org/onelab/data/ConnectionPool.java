@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 连接池
  * @author Chunliang.Han on 15/8/10.
  */
 public class ConnectionPool {

@@ -5,6 +5,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
+ * 数组处理器
+ * 将查询结果ResultSet的指定行转换成相应数组
  * @author Chunliang.Han on 15/8/15.
  */
 public class ArrayProducer implements ResultProducer<Object[]> {
