@@ -30,10 +30,6 @@ public class Config {
    * 连接池中的最小连接数
    */
   private int minPoolSize;
-  /**
-   * 最大连接数
-   */
-  private int maxConnectionsNum;
 
   public String getId() {
     return id;
@@ -81,13 +77,5 @@ public class Config {
 
   public void setMinPoolSize(int minPoolSize) {
     this.minPoolSize = minPoolSize;
-  }
-
-  public int getMaxConnectionsNum() {
-    return maxConnectionsNum;
-  }
-
-  public void setMaxConnectionsNum(int maxConnectionsNum) {
-    this.maxConnectionsNum = maxConnectionsNum;
   }
 }

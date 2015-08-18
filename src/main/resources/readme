@@ -4,13 +4,22 @@ version 1.0-SNAPSHOT
 2.支持基本查询
 3.<T> T insert(T entity)
 4.<T> void update(T entity)
-5.<T> void delete 通过ID删除
-6.<T> T find(Object id) 通过ID查询
-7.<T> List<T> findAll() 查询所有
+5.<T> void delete(Class<T> clazz) 通过ID删除
+6.<T> T find(Class<T> clazz,Object id) 通过ID查询
+7.<T> List<T> findAll(Class<T> clazz) 查询所有
 8.支持默认UUID生成策略(UUID)
+9.支持List<Map>返回结果
+10.支持List<Bean> 返回结果
+11.支持List<Object[]>返回结果
+13.支持Map返回结果
+14.支持Bean返回结果
+15.支持Object[]返回结果
+16.支持单结果返回
 
 version 1.1-SNAPSHOT
 功能：
 1.支持ID生成策略
 2.支持批量更新
 3.支持通过ID批量查询<T> List<T> findAllByIds(Collection ids) 根据ID查询所有
+4.支持分页
+5.支持事务（事务对象）

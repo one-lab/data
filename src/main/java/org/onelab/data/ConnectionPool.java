@@ -2,139 +2,109 @@ package org.onelab.data;
 
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 连接池
+ * 数据库连接管理器
  * @author Chunliang.Han on 15/8/10.
  */
 public class ConnectionPool {
 
-  final ThreadLocal<Connection> connectionLocal = new ThreadLocal<Connection>();
+  /**
+   * 数据库连接管理器
+   */
+  final ConnectionWrap connectionWrap;
+
+  /**
+   * 线程绑定数据库连接
+   */
+  final ThreadLocal<Connection> connectionLocal;
+
+  /**
+   * 数据库连接缓存区
+   */
   final LinkedBlockingQueue<Connection> connectionPool;
-  final AtomicInteger currConnections = new AtomicInteger(0);
 
-  private final String url;
-  private final String user;
-  private final String password;
+  /**
+   * 最大连接数
+   */
   private final int maxPoolSize;
+
+  /**
+   * 最小连接数
+   */
   private final int minPoolSize;
-  private final int maxConnectionsNum;
-
-  final ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
-  static {
-    try {
-      Class.forName(DriverManager.class.getName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("DriverManager加载失败", e);
-    }
-  }
 
   public ConnectionPool(Config config) {
-    this.url = config.getUrl();
-    this.user = config.getUser();
-    this.password = config.getPassword();
     this.maxPoolSize = config.getMaxPoolSize();
     this.minPoolSize = config.getMinPoolSize();
-    this.maxConnectionsNum = config.getMaxConnectionsNum();
+    connectionWrap = new ConnectionWrap(config.getUrl(),config.getUser(),config.getPassword());
+    connectionLocal = new ThreadLocal<Connection>();
     connectionPool = new LinkedBlockingQueue<Connection>(this.maxPoolSize);
   }
 
-  public void openTransaction() {
-    Connection connection = getConnection();
-    try {
-      connection.setAutoCommit(false);
-    } catch (SQLException e) {
-      throw new RuntimeException("开启事务失败", e);
-    }
-  }
-
-  public void closeTransation() {
-    close(getConnection());
-  }
-
-  public void commit() {
-    Connection connection = getConnection();
-    try {
-      connection.commit();
-    } catch (SQLException e) {
-      throw new RuntimeException("提交事务失败", e);
-    }
-  }
-
-  public void rollback() {
-    Connection connection = getConnection();
-    try {
-      connection.rollback();
-    } catch (SQLException e) {
-      throw new RuntimeException("回滚失败", e);
-    }
-  }
-
-  public void close(PreparedStatement pstm, ResultSet resultSet) {
-    if (resultSet != null) {
-      try {
-        resultSet.close();
-      } catch (SQLException e) {
-      }
-    }
-    close(pstm);
-  }
-
-  private void close(Connection connection) {
-    if (connection != null) {
+  /**
+   * 关闭当前线程中连接。
+   * 实际上执行的是将连接还回缓冲区的操作
+   * 如果当前连接存在且已开启自动提交则执行相关操作，否则直接返回
+   * 从线程变量中将连接删除
+   * 如果已经关闭，则直接返回
+   * 尝试将连接放回缓存区
+   * 如果还回缓冲区失败则尝试关闭连接
+   */
+  public void close() {
+    Connection connection = connectionLocal.get();
+    if (connection != null &&
+        connectionWrap.isAutoCommit(connection)) {
       connectionLocal.remove();
-      currConnections.decrementAndGet();
-      try {
-        //如果连接已关闭直接返回
-        if (connection.isClosed()) {
-          return;
-        }
-        //尝试将连接放回池中，若成功当前连接数加一
-        if (connectionPool.offer(connection)) {
-          currConnections.incrementAndGet();
-        }
-        //放回池中失败，关闭连接
-        else {
-          connection.close();
-        }
+      //如果连接已关闭直接返回
+      if (connectionWrap.isClosed(connection)) {
         return;
-      } catch (SQLException e) {
+      }
+      //尝试将连接放回池中
+      if (!connectionPool.offer(connection)) {
+        //放回池中失败，关闭连接
+        connectionWrap.close(connection);
       }
     }
   }
 
+  /**
+   * 关闭会话
+   * @param pstm
+   */
   public void close(PreparedStatement pstm) {
     if (pstm != null) {
       try {
         pstm.close();
-      } catch (SQLException e) {
-      }
+      } catch (SQLException e) {}
     }
-    closeConnection();
+    close();
   }
 
-  public void closeConnection() {
-    Connection connection = getConnection();
-    boolean autoCommit;
-    try {
-      autoCommit = connection.getAutoCommit();
-    } catch (SQLException e) {
-      throw new RuntimeException("获取事务是否开启失败", e);
+  /**
+   * 关闭查询同时关闭会话
+   * @param pstm
+   * @param resultSet
+   */
+  public void close(PreparedStatement pstm, ResultSet resultSet) {
+    if (resultSet != null) {
+      try {
+        resultSet.close();
+      } catch (SQLException e) {}
     }
-    if (autoCommit) {
-      close(connection);
-    }
+    close(pstm);
   }
 
+  /**
+   * 获取会话
+   * @param sql
+   * @param params
+   * @return
+   */
   public PreparedStatement getPreparedStatement(String sql, Object[] params) {
     try {
       PreparedStatement pstm = getConnection().prepareStatement(sql);
@@ -149,6 +119,10 @@ public class ConnectionPool {
     }
   }
 
+  /**
+   * 获取数据库连接
+   * @return
+   */
   public Connection getConnection() {
     Connection connection = connectionLocal.get();
     if (connection != null) {
@@ -161,38 +135,17 @@ public class ConnectionPool {
     return connection;
   }
 
+  /**
+   * 从缓冲区中获取连接
+   * 如果没有则创建连接
+   * @return
+   */
   private Connection getConnectionFromPool() {
-    if (connectionPool.size() <= minPoolSize && currConnections.get() < maxConnectionsNum) {
-      executorService.execute(new ConnectionCreator());
-    }
     Connection connection = connectionPool.poll();
     if (connection == null) {
-      connection = createConnection();
+      ConnectionPoolStuff.start(connectionWrap, connectionPool, minPoolSize);
+      connection = connectionWrap.getConnection();
     }
     return connection;
-  }
-
-  class ConnectionCreator implements Runnable {
-
-    public void run() {
-      while (connectionPool.size() <= maxPoolSize && currConnections.get() < maxConnectionsNum) {
-        connectionPool.offer(createConnection());
-      }
-    }
-  }
-
-  private Connection createConnection() {
-    try {
-      int currSize = currConnections.incrementAndGet();
-      if (currSize <= maxConnectionsNum) {
-        return DriverManager.getConnection(url, user, password);
-      } else {
-        currConnections.decrementAndGet();
-        throw new RuntimeException("too many connections , it must <= " + maxConnectionsNum);
-      }
-    } catch (SQLException e) {
-      currConnections.decrementAndGet();
-      throw new RuntimeException("connection 获取失败！", e);
-    }
   }
 }
