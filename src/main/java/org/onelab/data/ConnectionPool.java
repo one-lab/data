@@ -39,11 +39,12 @@ public class ConnectionPool {
   private final int minPoolSize;
 
   public ConnectionPool(Config config) {
-    this.maxPoolSize = config.getMaxPoolSize();
-    this.minPoolSize = config.getMinPoolSize();
+    maxPoolSize = config.getMaxPoolSize();
+    minPoolSize = config.getMinPoolSize();
     connectionWrap = new ConnectionWrap(config.getUrl(),config.getUser(),config.getPassword());
     connectionLocal = new ThreadLocal<Connection>();
-    connectionPool = new LinkedBlockingQueue<Connection>(this.maxPoolSize);
+    connectionPool = new LinkedBlockingQueue<Connection>(maxPoolSize);
+    ConnectionPoolStuffer.init(connectionWrap,connectionPool,minPoolSize);
   }
 
   /**
@@ -143,7 +144,7 @@ public class ConnectionPool {
   private Connection getConnectionFromPool() {
     Connection connection = connectionPool.poll();
     if (connection == null) {
-      ConnectionPoolStuff.start(connectionWrap, connectionPool, minPoolSize);
+      ConnectionPoolStuffer.execute();
       connection = connectionWrap.getConnection();
     }
     return connection;
