@@ -93,7 +93,7 @@ public class Session {
   public <T> T insert(T entity) {
     Sql sql = SqlRander.rander(SqlType.INSERT, entity.getClass(), entity);
     executeUpdate(sql.getSql(), sql.getParams());
-    EntityMetaManager.testInsertId(entity, sql.getParams());
+    EntityMetaManager.testInsertId(entity, sql.getParams()[0]);
     return entity;
   }
 

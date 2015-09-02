@@ -17,7 +17,6 @@ public class ConnectionPoolTest {
     config.setPassword("root");
     config.setMinPoolSize(5);
     config.setMaxPoolSize(15);
-    config.setMaxConnectionsNum(20);
     final ConnectionPool connectionPool = new ConnectionPool(config);
     final Set<Connection> connectionSet = new HashSet<Connection>();
     ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -27,11 +26,8 @@ public class ConnectionPoolTest {
         connectionSet.add(connection);
         int size = connectionSet.size();
         int pullSize = connectionPool.connectionPool.size();
-        int currSize = connectionPool.currConnections.get();
-        if (currSize>20){
-          System.out.println("total connection:" + size + " pool size:" + pullSize +" curr:"+ currSize);
-        }
-        connectionPool.closeConnection();
+        System.out.println("total source:" + size + " pool size:" + pullSize);
+        connectionPool.close();
       }
     };
     while (true){
