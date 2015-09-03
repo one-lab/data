@@ -1,8 +1,6 @@
 package org.onelab.data;
 
 import java.sql.Connection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -13,8 +11,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ConnectionPoolStuffer {
 
   static boolean isProcessing = false;
-
-  static ExecutorService stuffService = Executors.newSingleThreadExecutor();
 
   static Runnable runner;
 
@@ -27,7 +23,13 @@ public class ConnectionPoolStuffer {
    * 为给定池添加连接
    */
   public static void execute() {
-    stuffService.execute(runner);
+    if (lock()) {
+      try {
+        new Thread(runner).start();
+      } finally {
+        unLock();
+      }
+    }
   }
 
   private synchronized static boolean lock() {
@@ -56,14 +58,8 @@ public class ConnectionPoolStuffer {
     }
 
     public void run() {
-      if (lock()) {
-        try {
-          while (connectionPool.size() < bound) {
-            connectionPool.offer(connectionWrap.getConnection());
-          }
-        } finally {
-          unLock();
-        }
+      while (connectionPool.size() < bound) {
+        connectionPool.offer(connectionWrap.getConnection());
       }
     }
   }
