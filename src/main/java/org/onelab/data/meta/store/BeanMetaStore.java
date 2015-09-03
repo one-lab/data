@@ -22,14 +22,14 @@ public class BeanMetaStore {
    * @param clazz
    * @return
    */
-  private static BeanMeta createObjectMeta(Class clazz) {
-    BeanMeta entityMeta = new BeanMeta();
-    entityMeta.setEntityClass(clazz);
+  private static BeanMeta createBeanMeta(Class clazz) {
+    BeanMeta beanMeta = new BeanMeta();
+    beanMeta.setBeanClass(clazz);
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
-      entityMeta.putFieldWithName(field.getName(), field);
+      beanMeta.putFieldWithName(field.getName(), field);
     }
-    return entityMeta;
+    return beanMeta;
   }
 
   /**
@@ -38,10 +38,10 @@ public class BeanMetaStore {
    * @param clazz
    * @return
    */
-  public static BeanMeta getClassMeta(Class clazz) {
+  public static BeanMeta getBeanMeta(Class clazz) {
     BeanMeta objectMeta = local.get(clazz);
     if (objectMeta == null) {
-      objectMeta = createObjectMeta(clazz);
+      objectMeta = createBeanMeta(clazz);
       local.put(clazz, objectMeta);
     }
     return objectMeta;

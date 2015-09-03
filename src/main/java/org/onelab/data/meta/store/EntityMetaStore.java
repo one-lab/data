@@ -27,13 +27,13 @@ public class EntityMetaStore {
    */
   private static EntityMeta createEntityMeta(Class clazz) {
     EntityMeta entityMeta = new EntityMeta();
-    entityMeta.setEntityClass(clazz);
+    entityMeta.setBeanClass(clazz);
     entityMeta.setTable((Table) clazz.getAnnotation(Table.class));
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
-      entityMeta.putFieldWithName(field.getName(), field);
       Column column = field.getAnnotation(Column.class);
       if (column != null) {
+        entityMeta.putFieldWithName(column.name(), field);
         entityMeta.putFieldWithColumn(column, field);
         Id id = field.getAnnotation(Id.class);
         if (id != null) {

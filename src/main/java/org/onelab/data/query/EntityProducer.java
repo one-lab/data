@@ -28,8 +28,11 @@ public class EntityProducer<T> implements ResultProducer<T> {
     T res = BeanUtil.newInstance(tClass);
     for (int i = 0; i < columnCount; i++) {
       String columnName = resultSetMetaData.getColumnName(i + 1).toLowerCase();
-      Object value = resultSet.getObject(i + 1);
       Field field = entityMeta.getFieldWithName(columnName);
+      if (field == null){
+        continue;
+      }
+      Object value = resultSet.getObject(i + 1);
       BeanUtil.set(field, res, value);
     }
     return res;

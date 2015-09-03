@@ -24,12 +24,15 @@ public class BeanProducer<T> implements ResultProducer<T> {
 
   public T produce(ResultSetMetaData resultSetMetaData, ResultSet resultSet, int columnCount,
                    int rowIndex) throws SQLException {
-    BeanMeta entityMeta = BeanMetaStore.getClassMeta(tClass);
+    BeanMeta entityMeta = BeanMetaStore.getBeanMeta(tClass);
     T res = BeanUtil.newInstance(tClass);
     for (int i = 0; i < columnCount; i++) {
-      String columnName = resultSetMetaData.getColumnName(i + 1).toLowerCase();
+      String columnLabel = resultSetMetaData.getColumnLabel(i + 1).toLowerCase();
+      Field field = entityMeta.getFieldWithName(columnLabel);
+      if (field == null){
+        continue;
+      }
       Object value = resultSet.getObject(i + 1);
-      Field field = entityMeta.getFieldWithName(columnName);
       BeanUtil.set(field, res, value);
     }
     return res;

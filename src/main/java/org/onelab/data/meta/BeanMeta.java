@@ -14,7 +14,7 @@ public class BeanMeta {
   /**
    * 对应 data 的 class
    */
-  private Class entityClass;
+  private Class beanClass;
   /**
    * 属性名称(大小写不敏感)-属性对照表
    */
@@ -28,12 +28,12 @@ public class BeanMeta {
     return nameFieldMap.get(fieldName.toLowerCase());
   }
 
-  public Class getEntityClass() {
-    return entityClass;
+  public Class getBeanClass() {
+    return beanClass;
   }
 
-  public void setEntityClass(Class entityClass) {
-    this.entityClass = entityClass;
+  public void setBeanClass(Class beanClass) {
+    this.beanClass = beanClass;
   }
 
   public Map<String, Field> getNameFieldMap() {
