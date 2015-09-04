@@ -38,6 +38,14 @@ public class Session {
   }
 
   /**
+   * 获取事务
+   * @return
+   */
+  public Transaction getTransaction(){
+    return new Transaction(connectionPool);
+  }
+
+  /**
    * 基本更新
    * @param sql
    * @param params

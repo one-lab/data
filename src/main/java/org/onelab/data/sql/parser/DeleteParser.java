@@ -17,7 +17,7 @@ public class DeleteParser extends SqlParser {
     StringBuilder sb = new StringBuilder(DELETE);
     sb.append(EntityMetaManager.getTableName(entityMeta))
         .append(WHERE)
-        .append(EntityMetaManager.getTableName(entityMeta))
+        .append(EntityMetaManager.getIdName(entityMeta))
         .append("=?");
     Sql sql = new Sql();
     sql.setSql(sb.toString());

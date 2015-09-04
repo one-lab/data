@@ -60,16 +60,20 @@ public class ConnectionPool {
     Connection connection = connectionLocal.get();
     if (connection != null &&
         connectionWrap.isAutoCommit(connection)) {
-      connectionLocal.remove();
-      //如果连接已关闭直接返回
-      if (connectionWrap.isClosed(connection)) {
-        return;
-      }
-      //尝试将连接放回池中
-      if (!connectionPool.offer(connection)) {
-        //放回池中失败，关闭连接
-        connectionWrap.close(connection);
-      }
+      close(connection);
+    }
+  }
+
+  public void close(Connection connection){
+    connectionLocal.remove();
+    //如果连接已关闭直接返回
+    if (connectionWrap.isClosed(connection)) {
+      return;
+    }
+    //尝试将连接放回池中
+    if (!connectionPool.offer(connection)) {
+      //放回池中失败，关闭连接
+      connectionWrap.close(connection);
     }
   }
 

@@ -9,16 +9,19 @@ import java.util.List;
 public class SessionTest {
   static Session session;
   public static void main(String[] args) {
-    testInsert();
-    testUpdateAndFind();
-    testFindAll();
-    testQueryOneBean();
-    testQueryListBean();
-    testQueryOneMap();
-    testQueryListMap();
-    testQueryOneArray();
-    testQueryListArray();
-    testQuerySingleValue();
+//    testInsert();
+//    testUpdateAndFind();
+//    testFindAll();
+//    testDelete();
+//    testFindAll();
+//    testQueryOneBean();
+//    testQueryListBean();
+//    testQueryOneMap();
+//    testQueryListMap();
+//    testQueryOneArray();
+//    testQueryListArray();
+//    testQuerySingleValue();
+    testTtansaction_1();
   }
   public static Session getSession(){
     if (session==null){
@@ -49,9 +52,12 @@ public class SessionTest {
     System.out.println(user.getId());
   }
   public static void testFindAll(){
+    int i=0;
     for (User user:getSession().findAll(User.class)){
+      i++;
       System.out.println(user);
     }
+    System.out.println("total:"+i);
   }
   public static void testQueryOneBean(){
     System.out.println(getSession().queryOneBean(User.class, "select * from sm_user where id=?",
@@ -80,7 +86,48 @@ public class SessionTest {
     }
   }
   public static void testQuerySingleValue(){
-    Integer age = getSession().querySingleValue("select age from sm_user where id=?",new Object[]{"100"});
+    Integer age = getSession().querySingleValue("select age from sm_user where id=?",
+                                                new Object[]{"100"});
     System.out.println(age);
+  }
+  public static void testDelete(){
+    getSession().delete(User.class, "30d2b00b-ff31-4d31-b1c3-9a923153e3a3");
+  }
+  public static void testTtansaction_1(){
+    Transaction transaction = getSession().getTransaction();
+    transaction.begin();
+    User user=new User();
+    try {
+      user.setId("1231234");
+      getSession().insert(user);
+      user = getSession().find(User.class,"1231234");
+      System.out.println("1:" + user);
+      user.setName("123");
+      getSession().update(user);
+      transaction.submit();
+    } catch (Exception e){
+      e.printStackTrace();
+    }finally {
+      transaction.end();
+    }
+    user = getSession().find(User.class,"1231234");
+    System.out.print("2" + user);
+    System.out.print("==========");
+    transaction = getSession().getTransaction();
+    transaction.begin();
+    user=new User();
+    try {
+      user.setId("123123456");
+      getSession().insert(user);
+      user = getSession().find(User.class,"123123456");
+      System.out.println("1:" + user);
+      user.setName("123");
+      getSession().update(user);
+      transaction.submit();
+    } finally {
+      transaction.end();
+    }
+    user = getSession().find(User.class,"123123456");
+    System.out.print("2" + user);
   }
 }
