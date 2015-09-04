@@ -94,6 +94,9 @@ public class SessionTest {
     getSession().delete(User.class, "30d2b00b-ff31-4d31-b1c3-9a923153e3a3");
   }
   public static void testTtansaction_1(){
+    for (User user:getSession().findAll(User.class)){
+      getSession().delete(User.class,user.getId());
+    }
     Transaction transaction = getSession().getTransaction();
     transaction.begin();
     User user=new User();
@@ -104,22 +107,21 @@ public class SessionTest {
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);
-      transaction.submit();
     } catch (Exception e){
       e.printStackTrace();
     }finally {
       transaction.end();
     }
     user = getSession().find(User.class,"1231234");
-    System.out.print("2" + user);
-    System.out.print("==========");
+    System.out.println("2" + user);
+    System.out.println("==========");
     transaction = getSession().getTransaction();
     transaction.begin();
     user=new User();
     try {
-      user.setId("123123456");
+      user.setId("1231234567");
       getSession().insert(user);
-      user = getSession().find(User.class,"123123456");
+      user = getSession().find(User.class,"1231234567");
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);
@@ -127,7 +129,24 @@ public class SessionTest {
     } finally {
       transaction.end();
     }
-    user = getSession().find(User.class,"123123456");
-    System.out.print("2" + user);
+    user = getSession().find(User.class,"1231234567");
+    System.out.println("2" + user);
+    System.out.println("==========");
+    transaction = getSession().getTransaction();
+    transaction.begin();
+    user=new User();
+    try {
+      user.setId("12312345678");
+      getSession().insert(user);
+      user = getSession().find(User.class,"12312345678");
+      System.out.println("1:" + user);
+      user.setName("123");
+      getSession().update(user);
+      transaction.submit();
+    } finally {
+      transaction.end();
+    }
+    user = getSession().find(User.class,"12312345678");
+    System.out.println("2" + user);
   }
 }

@@ -31,12 +31,15 @@ public class Transaction {
   }
   public void end(){
     if (isSubmit){
-      //设置自动提交
-      connectionWrap.setAutoCommitTrue(connection);
-      //关闭连接
-      connectionPool.close(connection);
+      try {
+        connectionWrap.setAutoCommitTrue(connection);
+      } catch (Exception e){
+        connectionWrap.close(connection);
+        throw new RuntimeException(e);
+      } finally {
+        connectionPool.close(connection);
+      }
     } else {
-      connectionWrap.rollback(connection);
       connectionWrap.close(connection);
       connectionPool.close(connection);
     }
