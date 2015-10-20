@@ -75,12 +75,12 @@ public class EntityMetaManager {
   }
 
   /**
-   * 尝试给实体ID赋值
+   * 给实体ID赋值
    * @param entity
    * @param idValue
    * @param <T>
    */
-  public static <T> void testInsertId(T entity, Object idValue) {
+  public static <T> void insertId(T entity, Object idValue) {
     EntityMeta entityMeta = EntityMetaStore.getEntityMeta(entity.getClass());
     if (entityMeta.hasId()) {
       Field field = entityMeta.getIdMeta().getIdField();

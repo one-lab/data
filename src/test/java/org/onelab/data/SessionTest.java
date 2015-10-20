@@ -9,7 +9,8 @@ import java.util.List;
 public class SessionTest {
   static Session session;
   public static void main(String[] args) {
-//    testInsert();
+    clear();
+    testInsert();
 //    testUpdateAndFind();
 //    testFindAll();
 //    testDelete();
@@ -21,7 +22,12 @@ public class SessionTest {
 //    testQueryOneArray();
 //    testQueryListArray();
 //    testQuerySingleValue();
-    testTtansaction_1();
+//    testTtansaction_1();
+
+  }
+  public static void clear(){
+    String sql = "delete from sm_user";
+    getSession().executeUpdate(sql,null);
   }
   public static Session getSession(){
     if (session==null){
@@ -29,14 +35,17 @@ public class SessionTest {
       config.setUrl("jdbc:mysql://127.0.0.1:3306/sm?useUnicode=true&amp;characterEncoding=UTF-8");
       config.setUser("root");
       config.setPassword("root");
-      config.setMinPoolSize(5);
-      config.setMaxPoolSize(15);
+      config.setMinPoolSize(1);
+      config.setMaxPoolSize(1);
       session = new Session(new ConnectionPool(config));
     }
     return session;
   }
   public static void testInsert(){
     User user = new User();
+    user.setId(123454321);
+    user.setAge(12);
+    user.setName("ceshi");
     getSession().insert(user);
     System.out.println(user.getId());
   }
@@ -46,7 +55,7 @@ public class SessionTest {
     user.setName("name12");
     getSession().update(user);
     User user1 = getSession().find(User.class,user.getId());
-    System.out.println(user1.getId().equals(user.getId()));
+    System.out.println(user1.getId()==user.getId());
     System.out.println(user1.getName().equals(user.getName()));
     System.out.println(user1.getAge() == user.getAge());
     System.out.println(user.getId());
@@ -101,7 +110,7 @@ public class SessionTest {
     transaction.begin();
     User user=new User();
     try {
-      user.setId("1231234");
+      user.setId(1231234);
       getSession().insert(user);
       user = getSession().find(User.class,"1231234");
       System.out.println("1:" + user);
@@ -119,7 +128,7 @@ public class SessionTest {
     transaction.begin();
     user=new User();
     try {
-      user.setId("1231234567");
+      user.setId(1231234567);
       getSession().insert(user);
       user = getSession().find(User.class,"1231234567");
       System.out.println("1:" + user);
@@ -136,9 +145,9 @@ public class SessionTest {
     transaction.begin();
     user=new User();
     try {
-      user.setId("12312345678");
+      user.setId(12312345);
       getSession().insert(user);
-      user = getSession().find(User.class,"12312345678");
+      user = getSession().find(User.class,"12312345");
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);

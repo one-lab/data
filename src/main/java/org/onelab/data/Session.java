@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,35 @@ public class Session {
   }
 
   /**
+   * 需要数据库自动生成ID时用到的插入方法
+   * @param sql
+   * @param params
+   * @return 数据库生成的ID
+   */
+  public Object executeInsert(String sql, Object[] params) {
+    String insert = sql.trim().substring(0,6).toLowerCase();
+    if (!insert.equals("insert")){
+      throw new RuntimeException("插入数据失败[不是插入语句]:sql is " + sql+"");
+    }
+    PreparedStatement pstm = null;
+    ResultSet rs = null;
+    try {
+      pstm = connectionPool.getPreparedStatement(sql, params, Statement.RETURN_GENERATED_KEYS);
+      pstm.executeUpdate();
+      rs = pstm.getGeneratedKeys();
+      Object res = null;
+      if (rs.next()){
+        res = rs.getObject(1);
+      }
+      return res;
+    } catch (SQLException e) {
+      throw new RuntimeException("插入数据失败:sql is " + sql, e);
+    } finally {
+      connectionPool.close(pstm,rs);
+    }
+  }
+
+  /**
    * 基本查询
    * @param sql
    * @param params
@@ -100,8 +130,8 @@ public class Session {
    */
   public <T> T insert(T entity) {
     Sql sql = SqlRander.rander(SqlType.INSERT, entity.getClass(), entity);
-    executeUpdate(sql.getSql(), sql.getParams());
-    EntityMetaManager.testInsertId(entity, sql.getParams()[0]);
+    Object idValue = executeInsert(sql.getSql(), sql.getParams());
+    EntityMetaManager.insertId(entity, idValue);
     return entity;
   }
 

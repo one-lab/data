@@ -4,7 +4,6 @@ import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.sql.Sql;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.Column;
 
@@ -20,23 +19,27 @@ public class InsertParser extends SqlParser {
   @Override
   public Sql parseSql() {
     Sql sql = new Sql();
-    sql.setSql(getSql());
-    sql.setParams(getParams());
+    Object[] params = getParams();
+    sql.setParams(params);
+    sql.setSql(getSql(params.length));
     return sql;
   }
 
-  private String getSql() {
+  private String getSql(int paramsLen) {
     StringBuilder sql = new StringBuilder(INSERT_INTO)
         .append(EntityMetaManager.getTableName(entityMeta))
-        .append(fields())
+        .append(fields(paramsLen))
         .append(VALUES)
-        .append(values());
+        .append(values(paramsLen));
     return sql.toString();
   }
 
-  private StringBuilder fields() {
+  private StringBuilder fields(int paramsLen) {
     StringBuilder sb = new StringBuilder("(");
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
+    if (paramsLen == columns.size()-1){
+      columns = entityMeta.getNormalColumns();
+    }
     for (Column column : columns) {
       sb.append(column.name()).append(",");
     }
@@ -44,16 +47,16 @@ public class InsertParser extends SqlParser {
     return sb;
   }
 
-  private StringBuilder values() {
+  private StringBuilder values(int paramsLen) {
     StringBuilder sb = new StringBuilder("(");
-    int len = entityMeta.columnLength();
-    while (len-- > 0) {
+    while (paramsLen-- > 0) {
       sb.append("?").append(",");
     }
     sb.replace(sb.length() - 1, sb.length(), ")");
     return sb;
   }
 
+  //TODO 判断ID是否存在的方法需要调整（ID生成策略）
   private Object[] getParams() {
     Object[] params = new Object[entityMeta.columnLength()];
     List<Column> columns = EntityMetaManager.getAllColumns(entityMeta);
@@ -61,21 +64,11 @@ public class InsertParser extends SqlParser {
       params[i] = EntityMetaManager
           .getValueByColumn(entityMeta, data, columns.get(i));
     }
-    if (params[0] == null) {
-      params[0] = getIdValue();
+    if (params[0] == null || params[0].toString().equals("0")) {
+      Object[] res = new Object[params.length-1];
+      System.arraycopy(params, 1, res,0,res.length);
+      return res;
     }
     return params;
-  }
-
-  /**
-   * 获取ID的值
-   */
-  private Object getIdValue() {
-    Object idValue = EntityMetaManager.getIdValue(entityMeta, data);
-    // TODO 将来此处判断ID生成策略
-    if (idValue == null) {
-      idValue = UUID.randomUUID().toString();
-    }
-    return idValue;
   }
 }
