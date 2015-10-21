@@ -9,8 +9,8 @@ import java.util.List;
 public class SessionTest {
   static Session session;
   public static void main(String[] args) {
-    clear();
-    testInsert();
+//    clear();
+//    testInsert();
 //    testUpdateAndFind();
 //    testFindAll();
 //    testDelete();
@@ -21,7 +21,7 @@ public class SessionTest {
 //    testQueryListMap();
 //    testQueryOneArray();
 //    testQueryListArray();
-//    testQuerySingleValue();
+    testQuerySingleValue();
 //    testTtansaction_1();
 
   }
@@ -95,8 +95,15 @@ public class SessionTest {
     }
   }
   public static void testQuerySingleValue(){
-    Integer age = getSession().querySingleValue("select age from sm_user where id=?",
-                                                new Object[]{"100"});
+    clear();
+    User user = new User();
+    user.setId(123454321);
+    user.setAge(12);
+    user.setName("ceshi");
+    getSession().insert(user);
+    System.out.println(user.getId());
+    Integer age = getSession().queryObject("select age from sm_user where id=?",
+                                           new Object[]{123454321});
     System.out.println(age);
   }
   public static void testDelete(){

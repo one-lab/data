@@ -2,6 +2,7 @@ package org.onelab.data;
 
 import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.query.ArrayProducer;
+import org.onelab.data.query.BaseTypeProducer;
 import org.onelab.data.query.MapProducer;
 import org.onelab.data.query.EntityProducer;
 import org.onelab.data.query.BeanProducer;
@@ -199,6 +200,16 @@ public class Session {
   }
 
   /**
+   * 返回结果为基本类型的查询
+   * @param sql
+   * @param params
+   * @return
+   */
+  public<T> List<T> queryListObject(String sql, Object[] params){
+    return executeQuery(sql,params,new BaseTypeProducer<T>());
+  }
+
+  /**
    * 返回条目为数组的查询
    * @param sql
    * @param params
@@ -237,10 +248,10 @@ public class Session {
    * @param <T>
    * @return
    */
-  public <T> T querySingleValue(String sql, Object[] params){
-    Object[] res = queryOneArray(sql, params);
-    if (res!=null){
-      return (T) res[0];
+  public <T> T queryObject(String sql, Object[] params){
+    List<T> res = queryListObject(sql,params);
+    if (res.size()>0){
+      return res.get(0);
     }
     return null;
   }
