@@ -6,6 +6,7 @@ import org.onelab.data.query.BaseTypeProducer;
 import org.onelab.data.query.MapProducer;
 import org.onelab.data.query.EntityProducer;
 import org.onelab.data.query.BeanProducer;
+import org.onelab.data.query.ResultCallBack;
 import org.onelab.data.query.ResultProducer;
 import org.onelab.data.sql.Sql;
 import org.onelab.data.sql.SqlRander;
@@ -121,6 +122,31 @@ public class Session {
       connectionPool.close(pstm, resultSet);
     }
     return resultList;
+  }
+
+  /**
+   * 基本查询，返回值交由用户处理
+   * @param sql
+   * @param params
+   * @param caller
+   * @return
+   */
+  public void executeQuery(String sql, Object[] params, ResultCallBack caller) {
+    PreparedStatement pstm = connectionPool.getPreparedStatement(sql, params);
+    ResultSet resultSet = null;
+    try {
+      resultSet = pstm.executeQuery();
+      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+      int len = resultSetMetaData.getColumnCount();
+      int i = 0;
+      while (resultSet.next()) {
+        caller.call(resultSetMetaData, resultSet, len, i++);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("查询数据失败:sql[" + sql + "]", e);
+    } finally {
+      connectionPool.close(pstm, resultSet);
+    }
   }
 
   /**
