@@ -21,10 +21,16 @@ public class BeanMeta {
   private final Map<String, Field> nameFieldMap = new HashMap<String, Field>(0);
 
   public void putFieldWithName(String fieldName, Field field) {
+    if (fieldName.contains("_")){
+      fieldName = fieldName.replaceAll("_","");
+    }
     nameFieldMap.put(fieldName.toLowerCase(), field);
   }
 
   public Field getFieldWithName(String fieldName) {
+    if (fieldName.contains("_")){
+      fieldName = fieldName.replaceAll("_","");
+    }
     return nameFieldMap.get(fieldName.toLowerCase());
   }
 
