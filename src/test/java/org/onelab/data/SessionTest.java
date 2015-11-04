@@ -21,9 +21,8 @@ public class SessionTest {
 //    testQueryListMap();
 //    testQueryOneArray();
 //    testQueryListArray();
-    testQuerySingleValue();
-//    testTtansaction_1();
-
+//    testQuerySingleValue();
+    testTtansaction_1();
   }
   public static void clear(){
     String sql = "delete from sm_user";
@@ -162,7 +161,7 @@ public class SessionTest {
     } finally {
       transaction.end();
     }
-    user = getSession().find(User.class,"12312345678");
+    user = getSession().find(User.class,"12312345");
     System.out.println("2" + user);
   }
 }

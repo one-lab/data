@@ -3,7 +3,7 @@ package org.onelab.data;
 import java.sql.Connection;
 
 /**
- * 简单的事务处理器
+ * 简单的事务处理器（暂时不支持嵌套事务）
  * @author Chunliang.Han on 15/9/4.
  */
 public class Transaction {
@@ -30,17 +30,16 @@ public class Transaction {
     }
   }
   public void end(){
-    if (isSubmit){
-      try {
+    try {
+      if (isSubmit) {
         connectionWrap.setAutoCommitTrue(connection);
-      } catch (Exception e){
-        connectionWrap.close(connection);
-        throw new RuntimeException(e);
-      } finally {
-        connectionPool.close(connection);
+      } else {
+        connectionWrap.rollback(connection);
       }
-    } else {
+    } catch (Throwable t){
       connectionWrap.close(connection);
+      throw new RuntimeException(t);
+    }finally {
       connectionPool.close(connection);
     }
   }
