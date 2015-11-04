@@ -31,15 +31,14 @@ public class Transaction {
   }
   public void end(){
     try {
-      if (isSubmit) {
-        connectionWrap.setAutoCommitTrue(connection);
-      } else {
+      if (!isSubmit) {
         connectionWrap.rollback(connection);
       }
+      connectionWrap.setAutoCommitTrue(connection);
     } catch (Throwable t){
       connectionWrap.close(connection);
       throw new RuntimeException(t);
-    }finally {
+    } finally {
       connectionPool.close(connection);
     }
   }
