@@ -30,6 +30,10 @@ public class Config {
    * 连接池中的最小连接数
    */
   private int minPoolSize;
+  /**
+   * 连接失效时间
+   */
+  private int invalidTime;
 
   public String getId() {
     return id;
@@ -77,5 +81,13 @@ public class Config {
 
   public void setMinPoolSize(int minPoolSize) {
     this.minPoolSize = minPoolSize;
+  }
+
+  public int getInvalidTime() {
+    return invalidTime;
+  }
+
+  public void setInvalidTime(int invalidTime) {
+    this.invalidTime = invalidTime;
   }
 }

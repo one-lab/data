@@ -13,7 +13,7 @@ public class Transaction {
   boolean isSubmit = false;
   public Transaction(ConnectionPool connectionPool){
     this.connectionPool = connectionPool;
-    this.connectionWrap = connectionPool.connectionWrap;
+    this.connectionWrap = connectionPool.connWrap;
     this.connection = connectionPool.getConnection();
   }
   public boolean begin(){

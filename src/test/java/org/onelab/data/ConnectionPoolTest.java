@@ -15,14 +15,15 @@ import java.util.concurrent.Executors;
 public class ConnectionPoolTest {
   public static void main(String[] args){
     Config config = new Config();
-    config.setUrl("jdbc:mysql://127.0.0.1:3306/sm?useUnicode=true&amp;characterEncoding=UTF-8");
+    config.setUrl("jdbc:mysql://192.168.0.249:3306/Biz?useUnicode=true&amp;characterEncoding=UTF-8");
     config.setUser("root");
     config.setPassword("root");
     config.setMinPoolSize(5);
     config.setMaxPoolSize(15);
+    config.setInvalidTime(1);
     final ConnectionPool connectionPool = new ConnectionPool(config);
     final Set<Connection> connectionSet = new HashSet<Connection>();
-    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
     Runnable runnable = new Runnable() {
       public void run() {
         Connection connection = connectionPool.getConnection();
@@ -33,8 +34,15 @@ public class ConnectionPoolTest {
         connectionPool.close();
       }
     };
-    while (true){
-      executorService.execute(runnable);
+//    while (true){
+//      executorService.execute(runnable);
+//    }
+    executorService.execute(runnable);
+    try {
+      Thread.sleep(100000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
+    executorService.shutdown();
   }
 }

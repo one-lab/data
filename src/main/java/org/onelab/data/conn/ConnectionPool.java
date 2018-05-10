@@ -16,35 +16,46 @@ public class ConnectionPool {
   /**
    * 数据库连接管理器
    */
-  final ConnectionWrap connectionWrap;
+  final ConnectionWrap connWrap;
 
   /**
    * 线程绑定数据库连接
    */
-  final ThreadLocal<Connection> connectionLocal;
+  final ThreadLocal<Connection> connLocal;
 
   /**
    * 数据库连接缓存区
    */
-  final LinkedBlockingQueue<Connection> connectionPool;
+  final LinkedBlockingQueue<Connection> connPool;
+
+  /**
+   * 连接池管理器
+   */
+  final ConnectionPoolStuffer stuffer;
 
   /**
    * 最大连接数
    */
-  private final int maxPoolSize;
+  final int maxPoolSize;
 
   /**
    * 最小连接数
    */
-  private final int minPoolSize;
+  final int minPoolSize;
+
+  /**
+   * 连接失效时间(分)
+   */
+  final int invalidTime;
 
   public ConnectionPool(Config config) {
     maxPoolSize = config.getMaxPoolSize();
     minPoolSize = config.getMinPoolSize();
-    connectionWrap = new ConnectionWrap(config.getUrl(),config.getUser(),config.getPassword());
-    connectionLocal = new ThreadLocal<Connection>();
-    connectionPool = new LinkedBlockingQueue<Connection>(maxPoolSize);
-    ConnectionPoolStuffer.init(connectionWrap,connectionPool,minPoolSize);
+    invalidTime = config.getInvalidTime();
+    connWrap = new ConnectionWrap(config.getUrl(), config.getUser(), config.getPassword());
+    connLocal = new ThreadLocal<Connection>();
+    connPool = new LinkedBlockingQueue<Connection>(maxPoolSize);
+    stuffer = new ConnectionPoolStuffer(this);
   }
 
   /**
@@ -52,7 +63,7 @@ public class ConnectionPool {
    * @return
    */
   public int size(){
-    return connectionPool.size();
+    return connPool.size();
   }
 
   /**
@@ -65,23 +76,23 @@ public class ConnectionPool {
    * 如果还回缓冲区失败则尝试关闭连接
    */
   public void close() {
-    Connection connection = connectionLocal.get();
+    Connection connection = connLocal.get();
     if (connection != null &&
-        connectionWrap.isAutoCommit(connection)) {
+        connWrap.isAutoCommit(connection)) {
       close(connection);
     }
   }
 
   public void close(Connection connection){
-    connectionLocal.remove();
+    connLocal.remove();
     //如果连接已关闭直接返回
-    if (connectionWrap.isClosed(connection)) {
+    if (connWrap.isClosed(connection)) {
       return;
     }
     //尝试将连接放回池中
-    if (!connectionPool.offer(connection)) {
+    if (!connPool.offer(connection)) {
       //放回池中失败，关闭连接
-      connectionWrap.close(connection);
+      connWrap.close(connection);
     }
   }
 
@@ -158,13 +169,13 @@ public class ConnectionPool {
    * @return
    */
   public Connection getConnection() {
-    Connection connection = connectionLocal.get();
+    Connection connection = connLocal.get();
     if (connection != null) {
       return connection;
     }
     connection = getConnectionFromPool();
     if (connection != null) {
-      connectionLocal.set(connection);
+      connLocal.set(connection);
     }
     return connection;
   }
@@ -175,10 +186,9 @@ public class ConnectionPool {
    * @return
    */
   private Connection getConnectionFromPool() {
-    Connection connection = connectionPool.poll();
+    Connection connection = connPool.poll();
     if (connection == null) {
-      ConnectionPoolStuffer.execute();
-      connection = connectionWrap.getConnection();
+      connection = connWrap.getConnection();
     }
     return connection;
   }
