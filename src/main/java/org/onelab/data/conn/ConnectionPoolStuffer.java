@@ -1,4 +1,4 @@
-package org.onelab.data;
+package org.onelab.data.conn;
 
 import java.sql.Connection;
 import java.util.concurrent.LinkedBlockingQueue;

@@ -1,5 +1,8 @@
 package org.onelab.data;
 
+import org.onelab.data.conn.Config;
+import org.onelab.data.conn.ConnectionPool;
+
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +28,7 @@ public class ConnectionPoolTest {
         Connection connection = connectionPool.getConnection();
         connectionSet.add(connection);
         int size = connectionSet.size();
-        int pullSize = connectionPool.connectionPool.size();
+        int pullSize = connectionPool.size();
         System.out.println("total source:" + size + " pool size:" + pullSize);
         connectionPool.close();
       }

@@ -1,5 +1,7 @@
 package org.onelab.data;
 
+import org.onelab.data.conn.ConnectionPool;
+import org.onelab.data.conn.Transaction;
 import org.onelab.data.meta.EntityMetaManager;
 import org.onelab.data.query.ArrayProducer;
 import org.onelab.data.query.BaseTypeProducer;

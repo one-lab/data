@@ -1,0 +1,6 @@
+# Created by .ignore support plugin (hsz.mobi)
+target/
+.idea/
+data.iml
+src/test/java/org/onelab/data/Demo.java
+.DS_Store

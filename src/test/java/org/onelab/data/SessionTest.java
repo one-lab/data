@@ -1,5 +1,9 @@
 package org.onelab.data;
 
+import org.onelab.data.conn.Config;
+import org.onelab.data.conn.ConnectionPool;
+import org.onelab.data.conn.Transaction;
+
 import java.util.Arrays;
 import java.util.List;
 

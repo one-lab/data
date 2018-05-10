@@ -1,5 +1,8 @@
 package org.onelab.data;
 
+import org.onelab.data.conn.Config;
+import org.onelab.data.conn.ConnectionPool;
+
 import java.util.HashMap;
 import java.util.Map;
 

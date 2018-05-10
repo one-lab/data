@@ -1,4 +1,4 @@
-package org.onelab.data;
+package org.onelab.data.conn;
 
 
 import java.sql.Connection;
@@ -45,6 +45,14 @@ public class ConnectionPool {
     connectionLocal = new ThreadLocal<Connection>();
     connectionPool = new LinkedBlockingQueue<Connection>(maxPoolSize);
     ConnectionPoolStuffer.init(connectionWrap,connectionPool,minPoolSize);
+  }
+
+  /**
+   * 当前连接数
+   * @return
+   */
+  public int size(){
+    return connectionPool.size();
   }
 
   /**

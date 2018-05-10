@@ -1,4 +1,4 @@
-package org.onelab.data;
+package org.onelab.data.conn;
 
 /**
  * 配置
