@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 public class ConnectionPoolTest {
   public static void main(String[] args){
     Config config = new Config();
+    config.setDriver("com.mysql.jdbc.Driver");
     config.setUrl("jdbc:mysql://192.168.0.249:3306/Biz?useUnicode=true&amp;characterEncoding=UTF-8");
     config.setUser("root");
     config.setPassword("root");
@@ -34,6 +35,10 @@ public class ConnectionPoolTest {
         connectionPool.close();
       }
     };
+    new ConnectionPool(config).getConnection();
+    System.out.print(22);
+    new ConnectionPool(config).getConnection();
+    System.out.print(22);
 //    while (true){
 //      executorService.execute(runnable);
 //    }

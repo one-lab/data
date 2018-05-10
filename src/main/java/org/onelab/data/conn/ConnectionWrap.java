@@ -3,28 +3,39 @@ package org.onelab.data.conn;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 数据库连接管理器
  * @author Chunliang.Han on 15/8/18.
  */
 public class ConnectionWrap {
+
   private final String url;
   private final String user;
   private final String password;
+  public static Set<String> drivers;
 
-  static {
-    try {
-      Class.forName(DriverManager.class.getName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("DriverManager加载失败", e);
+  private synchronized static void initDriver(String driver){
+    if (drivers == null) {
+      drivers = new HashSet<String>();
+    }
+    if (drivers.add(driver)){
+      try {
+        Class.forName(driver);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException("DriverManager加载失败 : "+driver, e);
+      }
     }
   }
 
-  public ConnectionWrap(String url, String user, String password) {
+
+  public ConnectionWrap(String driver, String url, String user, String password) {
     this.url = url;
     this.user = user;
     this.password = password;
+    initDriver(driver);
   }
 
   public Connection getConnection(){

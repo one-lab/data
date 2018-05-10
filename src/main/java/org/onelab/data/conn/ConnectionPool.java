@@ -52,7 +52,7 @@ public class ConnectionPool {
     maxPoolSize = config.getMaxPoolSize();
     minPoolSize = config.getMinPoolSize();
     invalidTime = config.getInvalidTime();
-    connWrap = new ConnectionWrap(config.getUrl(), config.getUser(), config.getPassword());
+    connWrap = new ConnectionWrap(config.getDriver(), config.getUrl(), config.getUser(), config.getPassword());
     connLocal = new ThreadLocal<Connection>();
     connPool = new LinkedBlockingQueue<Connection>(maxPoolSize);
     stuffer = new ConnectionPoolStuffer(this);

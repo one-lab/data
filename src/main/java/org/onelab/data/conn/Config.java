@@ -11,6 +11,10 @@ public class Config {
    */
   private String id;
   /**
+   * 驱动类
+   */
+  private String driver;
+  /**
    * 数据库地址
    */
   private String url;
@@ -41,6 +45,14 @@ public class Config {
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public String getDriver() {
+    return driver;
+  }
+
+  public void setDriver(String driver) {
+    this.driver = driver;
   }
 
   public String getUrl() {
