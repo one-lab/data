@@ -51,6 +51,12 @@ public class BeanUtil {
       if (!field.isAccessible()) {
         field.setAccessible(true);
       }
+      // TODO: 2018/5/10  先单独处理GigInteger类型
+      if (field.getType() == long.class || field.getType() == Long.class){
+        if (value.getClass() != long.class || field.getType() != Long.class){
+          value = Long.parseLong(value==null ? "0" : value.toString());
+        }
+      }
       field.set(o, value);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
