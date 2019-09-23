@@ -18,6 +18,8 @@ import javax.persistence.Table;
  */
 public class EntityMetaStore {
 
+  private static final Object localLock = new Object();
+
   public static final Map<Class, EntityMeta> local = new HashMap<Class, EntityMeta>();
 
   /**
@@ -58,8 +60,12 @@ public class EntityMetaStore {
   public static EntityMeta getEntityMeta(Class clazz) {
     EntityMeta entityMeta = local.get(clazz);
     if (entityMeta == null) {
-      entityMeta = createEntityMeta(clazz);
-      local.put(clazz, entityMeta);
+      synchronized (localLock){
+        if (entityMeta == null){
+          entityMeta = createEntityMeta(clazz);
+          local.put(clazz, entityMeta);
+        }
+      }
     }
     if (entityMeta.getTable() == null) {
       throw new RuntimeException("data " + clazz + " must has Column annotation !");

@@ -13,6 +13,8 @@ import java.util.Map;
  */
 public class SessionFactory {
 
+  private static final Object sessionLock = new Object();
+
   private static Map<String, Session> sessionMap = new HashMap<String, Session>(4);
 
   private static ConnectionPool getConnectionPool(Config config) {
@@ -42,8 +44,12 @@ public class SessionFactory {
     }
     Session session = sessionMap.get(id);
     if (session == null) {
-      session = createSession(config);
-      sessionMap.put(id, session);
+      synchronized (sessionLock){
+        if (session == null){
+          session = createSession(config);
+          sessionMap.put(id, session);
+        }
+      }
     }
     return session;
   }

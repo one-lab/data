@@ -12,6 +12,8 @@ import java.util.Map;
  */
 public class BeanMetaStore {
 
+  private static final Object localLock = new Object();
+
   /**
    * 类描述对象本地缓存
    */
@@ -41,8 +43,12 @@ public class BeanMetaStore {
   public static BeanMeta getBeanMeta(Class clazz) {
     BeanMeta objectMeta = local.get(clazz);
     if (objectMeta == null) {
-      objectMeta = createBeanMeta(clazz);
-      local.put(clazz, objectMeta);
+      synchronized (localLock){
+        if (objectMeta == null){
+          objectMeta = createBeanMeta(clazz);
+          local.put(clazz, objectMeta);
+        }
+      }
     }
     return objectMeta;
   }
