@@ -42,7 +42,7 @@ public class ConnectionWrap {
     try {
       return DriverManager.getConnection(url, user, password);
     } catch (SQLException e) {
-      throw new RuntimeException("创建数据库连接失败",e);
+      throw new RuntimeException("数据库连接创建失败",e);
     }
   }
 

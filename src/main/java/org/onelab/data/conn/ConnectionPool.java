@@ -139,7 +139,7 @@ public class ConnectionPool {
       }
       return pstm;
     } catch (SQLException e) {
-      throw new RuntimeException("PreparedStatement 开启失败。", e);
+      throw new RuntimeException("PreparedStatement 获取失败", e);
     }
   }
 
@@ -160,7 +160,7 @@ public class ConnectionPool {
       }
       return pstm;
     } catch (SQLException e) {
-      throw new RuntimeException("PreparedStatement 开启失败。", e);
+      throw new RuntimeException("PreparedStatement 获取失败", e);
     }
   }
 

@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 public class EntityMetaStore {
 
-  public static final Map<Class, EntityMeta> local = new HashMap<Class, EntityMeta>(0);
+  public static final Map<Class, EntityMeta> local = new HashMap<Class, EntityMeta>();
 
   /**
    * 生成实体描述对象

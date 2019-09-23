@@ -20,7 +20,7 @@ public class SessionFactory {
     try {
       connectionPool.getConnection();
     } catch (Throwable t) {
-      throw new RuntimeException("mysql连接获取失败", t);
+      throw new RuntimeException("数据库连接获取失败", t);
     } finally {
       connectionPool.close();
     }

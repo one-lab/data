@@ -15,7 +15,7 @@ public class BeanMetaStore {
   /**
    * 类描述对象本地缓存
    */
-  public static final Map<Class, BeanMeta> local = new HashMap<Class, BeanMeta>(0);
+  public static final Map<Class, BeanMeta> local = new HashMap<Class, BeanMeta>();
 
   /**
    * 生成指定类的描述对象
