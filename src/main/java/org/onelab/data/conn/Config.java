@@ -35,7 +35,7 @@ public class Config {
    */
   private int minPoolSize;
   /**
-   * 连接失效时间
+   * 连接失效时间（秒）
    */
   private int invalidTime;
 

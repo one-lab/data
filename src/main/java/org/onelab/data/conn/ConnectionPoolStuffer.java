@@ -9,18 +9,12 @@ import java.sql.Connection;
  */
 public class ConnectionPoolStuffer {
 
-  /**
-   * 上次更新连接池时间
-   */
-  long lastClearTime ;
-
   final Thread executor ;
 
   final ConnectionPool pool ;
 
   public ConnectionPoolStuffer(ConnectionPool connectionPool){
     pool = connectionPool;
-    lastClearTime = System.currentTimeMillis();
     executor = new Thread(new Runner());
     executor.setDaemon(true);
     executor.start();
@@ -38,14 +32,23 @@ public class ConnectionPoolStuffer {
      */
     class InitPoolThread extends Thread {
 
+      InitPoolThread(){
+        super("InitPoolThread");
+      }
+
       @Override
       public void run() {
         while (true){
           try {
-            Thread.sleep(100);
+            //最小连接数小于等于0，睡眠5秒，跳过本次执行
+            if (pool.minPoolSize <= 0){
+              Thread.sleep(5000);
+              continue;
+            }
             while (pool.size() < pool.minPoolSize) {
               pool.connPool.offer(pool.connWrap.getConnection());
             }
+            pool.waitToInitPool();
           } catch (Throwable t){
             t.printStackTrace();
             try {
@@ -64,27 +67,36 @@ public class ConnectionPoolStuffer {
      */
     class InvalidPoolThread extends Thread {
 
+      InvalidPoolThread(){
+        super("InvalidPoolThread");
+      }
+
+      /**
+       * 上次更新连接池时间
+       */
+      long lastClearTime = System.currentTimeMillis();
+
       @Override
       public void run() {
         while (true){
           try {
-            //睡眠3秒
-            Thread.sleep(3000);
+            //睡眠5秒
+            Thread.sleep(5000);
+            if (pool.invalidTime <= 0){
+              continue;
+            }
             //当前时间-上次更新时间>失效时间 : 清空当前连接池
-            long invalidTime = pool.invalidTime*60*1000;
-            if (invalidTime > 0){
-              if (System.currentTimeMillis() - lastClearTime > invalidTime){
-                //当前连接数
-                int poolSize = pool.size();
-                while (--poolSize>0){
-                  Connection conn = pool.connPool.poll();
-                  if (conn == null){
-                    break;
-                  }
-                  pool.connWrap.close(conn);
+            if (System.currentTimeMillis() - lastClearTime > pool.invalidTime*1000){
+              //当前连接数
+              int poolSize = pool.size();
+              while (poolSize-- > 0){
+                Connection conn = pool.connPool.poll();
+                if (conn == null){
+                  break;
                 }
-                lastClearTime = System.currentTimeMillis();
+                pool.connWrap.close(conn);
               }
+              lastClearTime = System.currentTimeMillis();
             }
           } catch (Throwable t) {
             t.printStackTrace();

@@ -1,4 +1,6 @@
-package org.onelab.data;
+package org.onelab.data.model;
+
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -8,37 +10,38 @@ import javax.persistence.Table;
  * @author Chunliang.Han on 15/8/15.
  */
 @Table(name = "sm_user")
-public class User {
+public class UserModel4 {
+
   @Id
-  @Column(name = "id")
+  @Column
   private long id;
-  @Column(name = "name")
+
   private String name;
-  @Column(name = "age")
+
   private int age;
+
+  private String ignore;
+
+  private Date mTiMe;
 
   public long getId() {
     return id;
-  }
-
-  public void setId(long id) {
-    this.id = id;
   }
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public int getAge() {
     return age;
   }
 
-  public void setAge(int age) {
-    this.age = age;
+  public String getIgnore() {
+    return ignore;
+  }
+
+  public Date getmTiMe() {
+    return mTiMe;
   }
 
   @Override

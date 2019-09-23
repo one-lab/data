@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -35,13 +36,15 @@ public class EntityMetaStore {
     for (Field field : fields) {
       Column column = field.getAnnotation(Column.class);
       if (column != null) {
-        entityMeta.putFieldWithName(column.name(), field);
+        String columnName = column.name();
+        if (columnName == null || columnName.length()==0){
+          throw new RuntimeException("Entity " + clazz + ", Field "+field.getName()+" must be have Column name !");
+        }
+        entityMeta.putFieldWithName(columnName, field);
         entityMeta.putFieldWithColumn(column, field);
         Id id = field.getAnnotation(Id.class);
         if (id != null) {
-          IDMeta idMeta = new IDMeta();
-          idMeta.setIdColumn(column);
-          idMeta.setIdField(field);
+          IDMeta idMeta = new IDMeta(field, column, field.getAnnotation(GeneratedValue.class));
           entityMeta.setIdMeta(idMeta);
         } else {
           entityMeta.getNormalColumns().add(column);
@@ -63,12 +66,19 @@ public class EntityMetaStore {
       synchronized (localLock){
         if (entityMeta == null){
           entityMeta = createEntityMeta(clazz);
+          if (entityMeta.getTable() == null) {
+            throw new RuntimeException("Entity " + clazz + " must be have Table annotation !");
+          }
+          String tableName = entityMeta.getTable().name();
+          if (tableName == null || tableName.length()==0){
+            throw new RuntimeException("Entity " + clazz + " must be have Table Name !");
+          }
+          if (!entityMeta.hasId()){
+            throw new RuntimeException("Entity " + clazz + " must be have Id annotation !");
+          }
           local.put(clazz, entityMeta);
         }
       }
-    }
-    if (entityMeta.getTable() == null) {
-      throw new RuntimeException("data " + clazz + " must has Column annotation !");
     }
     return entityMeta;
   }

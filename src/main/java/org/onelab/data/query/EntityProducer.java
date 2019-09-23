@@ -1,6 +1,6 @@
 package org.onelab.data.query;
 
-import org.onelab.data.BeanUtil;
+import org.onelab.data.utils.BeanUtil;
 import org.onelab.data.meta.EntityMeta;
 import org.onelab.data.meta.store.EntityMetaStore;
 

@@ -1,8 +1,17 @@
 package org.onelab.data;
 
-import org.onelab.data.conn.Config;
-import org.onelab.data.conn.ConnectionPool;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.onelab.data.conn.ConnectionPoolTest;
 import org.onelab.data.conn.Transaction;
+import org.onelab.data.model.UserEntity;
+import org.onelab.data.model.UserEntity1;
+import org.onelab.data.model.UserModel;
+import org.onelab.data.model.UserModel1;
+import org.onelab.data.model.UserModel2;
+import org.onelab.data.model.UserModel3;
+import org.onelab.data.model.UserModel4;
+import org.onelab.data.model.UserModel5;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,95 +20,196 @@ import java.util.List;
  * @author Chunliang.Han on 15/8/15.
  */
 public class SessionTest {
-  static Session session;
-  public static void main(String[] args) {
-//    clear();
-//    testInsert();
-//    testUpdateAndFind();
-//    testFindAll();
-//    testDelete();
-//    testFindAll();
-//    testQueryOneBean();
-//    testQueryListBean();
-//    testQueryOneMap();
-//    testQueryListMap();
-//    testQueryOneArray();
-//    testQueryListArray();
-//    testQuerySingleValue();
-    testTtansaction_1();
-  }
-  public static void clear(){
-    String sql = "delete from sm_user";
-    getSession().executeUpdate(sql,null);
-  }
-  public static Session getSession(){
-    if (session==null){
-      Config config = new Config();
-      config.setUrl("jdbc:mysql://127.0.0.1:3306/sm?useUnicode=true&amp;characterEncoding=UTF-8");
-      config.setUser("root");
-      config.setPassword("root");
-      config.setMinPoolSize(1);
-      config.setMaxPoolSize(1);
-      session = new Session(new ConnectionPool(config));
-    }
+
+  ConnectionPoolTest connectionPoolTest = new ConnectionPoolTest();
+
+  Session session = new Session(connectionPoolTest.getConnectionPool());
+
+  public Session getSession(){
     return session;
   }
-  public static void testInsert(){
-    User user = new User();
-    user.setId(123454321);
-    user.setAge(12);
-    user.setName("ceshi");
-    getSession().insert(user);
-    System.out.println(user.getId());
+
+  public void clear(){
+    String sql = "truncate table sm_user";
+    getSession().executeUpdate(sql,null);
   }
-  public static void testUpdateAndFind(){
-    User user = new User();
+
+  public UserEntity createUser(String name, int age){
+    UserEntity user = new UserEntity();
+    user.setAge(age);
+    user.setName(name);
+    return user;
+  }
+
+  public void createUsers(int n){
+    int i = 0;
+    while (i++ < n){
+      getSession().insert(createUser("u-"+i, 10+i));
+    }
+  }
+
+  @Test
+  public void testInsert_ID自增(){
+    clear();
+    UserEntity user = createUser("ceshi", 12);
+    user.setId(10);
+    System.out.println(user);
+    getSession().insert(user);
+    System.out.println(user);
+    UserEntity u1 = getSession().find(UserEntity.class, 1);
+    assertNotEquals(user.getId(), 10);
+    assertEquals(user.getId(), u1.getId());
+    assertEquals(user.getAge(), u1.getAge());
+    assertEquals(user.getName(), u1.getName());
+  }
+
+  @Test
+  public void testInsert_ID手动(){
+    clear();
+    UserEntity1 user = new UserEntity1();
+    user.setId(10);
+    user.setAge(12);
+    user.setName("ceshi1");
+    System.out.println(user);
+    getSession().insert(user);
+    System.out.println(user);
+    UserEntity1 u1 = getSession().find(UserEntity1.class, 10);
+    assertEquals(user.getId(), u1.getId());
+    assertEquals(user.getAge(), u1.getAge());
+    assertEquals(user.getName(), u1.getName());
+  }
+
+  @Test
+  public void testUpdateAndFind(){
+    clear();
+    UserEntity user = new UserEntity();
     user = getSession().insert(user);
+    user.setAge(25);
     user.setName("name12");
     getSession().update(user);
-    User user1 = getSession().find(User.class,user.getId());
-    System.out.println(user1.getId()==user.getId());
-    System.out.println(user1.getName().equals(user.getName()));
-    System.out.println(user1.getAge() == user.getAge());
-    System.out.println(user.getId());
-  }
-  public static void testFindAll(){
-    int i=0;
-    for (User user:getSession().findAll(User.class)){
-      i++;
-      System.out.println(user);
+    UserEntity user1 = getSession().find(UserEntity.class, user.getId());
+    assertEquals(user.getAge(), user1.getAge());
+    assertEquals(user.getName(), user1.getName());
+
+    Exception ex = null;
+    try {
+      getSession().find(UserModel.class, user.getId());
+    } catch (Exception e){
+      ex = e;
     }
-    System.out.println("total:"+i);
+    assertNotNull(ex);
+    assertEquals(ex.getMessage(),"Entity class org.onelab.data.model.UserModel must be have Table annotation !");
+
+    try {
+      getSession().find(UserModel1.class, user.getId());
+    } catch (Exception e){
+      ex = e;
+    }
+    assertNotNull(ex);
+    assertEquals(ex.getMessage(),"Entity class org.onelab.data.model.UserModel1 must be have Table Name !");
+
+    try {
+      getSession().find(UserModel2.class, user.getId());
+    } catch (Exception e){
+      ex = e;
+    }
+    assertNotNull(ex);
+    assertEquals(ex.getMessage(),"Entity class org.onelab.data.model.UserModel2 must be have Id annotation !");
+
+    try {
+      getSession().find(UserModel3.class, user.getId());
+    } catch (Exception e){
+      ex = e;
+    }
+    assertNotNull(ex);
+    assertEquals(ex.getMessage(),"Entity class org.onelab.data.model.UserModel3 must be have Id annotation !");
+
+    try {
+      getSession().find(UserModel4.class, user.getId());
+    } catch (Exception e){
+      ex = e;
+    }
+    assertNotNull(ex);
+    assertEquals(ex.getMessage(),"Entity class org.onelab.data.model.UserModel4, Field id must be have Column name !");
+
+    UserModel5 userModel = getSession().find(UserModel5.class, user.getId());
+
+    assertNotNull(userModel.getId());
+    assertNull(userModel.getName());
+    assertEquals(userModel.getAge(), 0);
   }
-  public static void testQueryOneBean(){
-    System.out.println(getSession().queryOneBean(User.class, "select * from sm_user where id=?",
-                                                 new Object[]{4}));
+
+  @Test
+  public void testFindAll(){
+    clear();
+    createUsers(10);
+    int i=0;
+    for (UserEntity user:getSession().findAll(UserEntity.class)){
+      i++;
+      assertEquals(user.getName(), "u-"+i);
+      assertEquals(user.getAge(), 10+i);
+    }
+    assertEquals(10, i);
   }
-  public static void testQueryListBean(){
-    System.out.println(getSession().queryListBean(User.class, "select * from sm_user", null));
+
+  @Test
+  public void testQueryOneBean(){
+    clear();
+    createUsers(10);
+    UserModel user = getSession()
+        .queryOneBean(UserModel.class, "select * from sm_user where id=?", new Object[]{4});
+    assertEquals(user.getName(), "u-"+4);
+    assertEquals(user.getAge(), 10+4);
+    assertNull(user.getIgnore());
+    assertNotNull(user.getmTiMe());
+  }
+
+  @Test
+  public void testQueryListBean(){
+    clear();
+    createUsers(10);
+    System.out.println(getSession().queryListBean(UserModel.class, "select * from sm_user", null));
 
   }
-  public static void testQueryOneMap(){
+
+  @Test
+  public void testQueryOneMap(){
+    clear();
+    createUsers(10);
     System.out.println(getSession().queryOneMap("select * from sm_user where id=?", new Object[]{4}));
   }
-  public static void testQueryListMap(){
+
+  @Test
+  public void testQueryListMap(){
+    clear();
+    createUsers(10);
     System.out.println(getSession().queryListMap("select * from sm_user", null));
 
   }
-  public static void testQueryOneArray(){
+
+  @Test
+  public void testQueryOneArray(){
+    clear();
+    createUsers(10);
     List list = Arrays.asList(
         getSession().queryOneArray("select * from sm_user where id=?", new Object[]{4}));
     System.out.println(list);
   }
-  public static void testQueryListArray(){
+
+  @Test
+  public void testQueryListArray(){
+    clear();
+    createUsers(10);
     List<Object[]> list = getSession().queryListArray("select * from sm_user", null);
     for (Object[] o:list){
       System.out.println(Arrays.asList(o));
     }
   }
-  public static void testQuerySingleValue(){
+
+  @Test
+  public void testQuerySingleValue(){
     clear();
-    User user = new User();
+    UserEntity1 user = new UserEntity1();
     user.setId(123454321);
     user.setAge(12);
     user.setName("ceshi");
@@ -108,21 +218,32 @@ public class SessionTest {
     Integer age = getSession().queryObject("select age from sm_user where id=?",
                                            new Object[]{123454321});
     System.out.println(age);
+
+    age = getSession().queryObject("select age from sm_user where id=?",
+                                   new Object[]{123454322});
+    System.out.println(age);
+
+    Long count = getSession().queryObject("select count(1) from sm_user", null);
+
+    System.out.println(count);
+
   }
-  public static void testDelete(){
-    getSession().delete(User.class, "30d2b00b-ff31-4d31-b1c3-9a923153e3a3");
-  }
-  public static void testTtansaction_1(){
-    for (User user:getSession().findAll(User.class)){
-      getSession().delete(User.class,user.getId());
+
+  @Test
+  public void testTtansaction_1(){
+
+    clear();
+    createUsers(10);
+    for (UserEntity user:getSession().findAll(UserEntity.class)){
+      getSession().delete(UserEntity.class, user.getId());
     }
     Transaction transaction = getSession().getTransaction();
     transaction.begin();
-    User user=new User();
+    UserEntity1 user=new UserEntity1();
     try {
       user.setId(1231234);
       getSession().insert(user);
-      user = getSession().find(User.class,"1231234");
+      user = getSession().find(UserEntity1.class, "1231234");
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);
@@ -131,16 +252,16 @@ public class SessionTest {
     }finally {
       transaction.end();
     }
-    user = getSession().find(User.class,"1231234");
+    user = getSession().find(UserEntity1.class, "1231234");
     System.out.println("2" + user);
     System.out.println("==========");
     transaction = getSession().getTransaction();
     transaction.begin();
-    user=new User();
+    user=new UserEntity1();
     try {
       user.setId(1231234567);
       getSession().insert(user);
-      user = getSession().find(User.class,"1231234567");
+      user = getSession().find(UserEntity1.class, "1231234567");
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);
@@ -148,16 +269,16 @@ public class SessionTest {
     } finally {
       transaction.end();
     }
-    user = getSession().find(User.class,"1231234567");
+    user = getSession().find(UserEntity1.class, "1231234567");
     System.out.println("2" + user);
     System.out.println("==========");
     transaction = getSession().getTransaction();
     transaction.begin();
-    user=new User();
+    user=new UserEntity1();
     try {
       user.setId(12312345);
       getSession().insert(user);
-      user = getSession().find(User.class,"12312345");
+      user = getSession().find(UserEntity1.class, "12312345");
       System.out.println("1:" + user);
       user.setName("123");
       getSession().update(user);
@@ -165,7 +286,7 @@ public class SessionTest {
     } finally {
       transaction.end();
     }
-    user = getSession().find(User.class,"12312345");
+    user = getSession().find(UserEntity1.class, "12312345");
     System.out.println("2" + user);
   }
 }

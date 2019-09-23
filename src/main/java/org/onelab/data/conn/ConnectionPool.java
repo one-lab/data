@@ -6,6 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 数据库连接管理器
@@ -34,19 +38,25 @@ public class ConnectionPool {
   final ConnectionPoolStuffer stuffer;
 
   /**
-   * 最大连接数
+   * 最大连接数，仅表示连接池内的连接数上线，并不代表当前活跃连接数。
+   * 当前活跃连接数<=线程数+minPoolSize
    */
   final int maxPoolSize;
 
   /**
-   * 最小连接数
+   * 最小连接数，如果小于等于0，则现用现创建
    */
   final int minPoolSize;
 
   /**
-   * 连接失效时间(分)
+   * 连接失效时间（秒），如果小于等于0，则立即失效
+   * 达到该时间，如果线程池中仍有连接，则该连接一定会被重置，不会关注该连接创建于何时
    */
   final int invalidTime;
+
+  private final Lock initPoolLock = new ReentrantLock();
+
+  private final Condition initPoolCondition = initPoolLock.newCondition();
 
   public ConnectionPool(Config config) {
     maxPoolSize = config.getMaxPoolSize();
@@ -87,6 +97,11 @@ public class ConnectionPool {
     connLocal.remove();
     //如果连接已关闭直接返回
     if (connWrap.isClosed(connection)) {
+      return;
+    }
+    //失效时间小于或等于0，直接销毁
+    if (invalidTime <= 0){
+      connWrap.close(connection);
       return;
     }
     //尝试将连接放回池中
@@ -169,15 +184,14 @@ public class ConnectionPool {
    * @return
    */
   public Connection getConnection() {
-    Connection connection = connLocal.get();
-    if (connection != null) {
-      return connection;
+    signalInit();
+    Connection conn = connLocal.get();
+    if (conn != null) {
+      return conn;
     }
-    connection = getConnectionFromPool();
-    if (connection != null) {
-      connLocal.set(connection);
-    }
-    return connection;
+    conn = getConnectionFromPool();
+    connLocal.set(conn);
+    return conn;
   }
 
   /**
@@ -186,10 +200,43 @@ public class ConnectionPool {
    * @return
    */
   private Connection getConnectionFromPool() {
-    Connection connection = connPool.poll();
+    Connection connection = null;
+    try {
+      connection = connPool.poll(200, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {}
     if (connection == null) {
       connection = connWrap.getConnection();
     }
     return connection;
+  }
+
+  /**
+   * 通知初始化连接池
+   */
+  void signalInit(){
+    boolean isLock = initPoolLock.tryLock();
+    if (isLock){
+      try {
+        initPoolCondition.signal();
+      } finally {
+        initPoolLock.unlock();
+      }
+    }
+  }
+
+  /**
+   * 等待初始化连接池
+   */
+  void waitToInitPool(){
+    boolean isLock = initPoolLock.tryLock();
+    if (isLock){
+      try {
+        initPoolCondition.await(1, TimeUnit.MINUTES);
+      } catch (InterruptedException t){
+        //等待到时间，应该开始初始化了
+      } finally {
+        initPoolLock.unlock();
+      }
+    }
   }
 }

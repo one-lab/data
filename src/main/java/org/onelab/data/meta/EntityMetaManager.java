@@ -1,6 +1,6 @@
 package org.onelab.data.meta;
 
-import org.onelab.data.BeanUtil;
+import org.onelab.data.utils.BeanUtil;
 import org.onelab.data.meta.store.EntityMetaStore;
 
 import java.lang.reflect.Field;

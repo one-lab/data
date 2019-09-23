@@ -1,4 +1,4 @@
-package org.onelab.data;
+package org.onelab.data.utils;
 
 import java.lang.reflect.Field;
 
@@ -50,12 +50,6 @@ public class BeanUtil {
     try {
       if (!field.isAccessible()) {
         field.setAccessible(true);
-      }
-      // TODO: 2018/5/10  先单独处理GigInteger类型
-      if (field.getType() == long.class || field.getType() == Long.class){
-        if (value.getClass() != long.class || field.getType() != Long.class){
-          value = Long.parseLong(value==null ? "0" : value.toString());
-        }
       }
       field.set(o, value);
     } catch (IllegalAccessException e) {
