@@ -1,6 +1,7 @@
 package org.onelab.data.condition;
 
 import org.onelab.data.Statement;
+import org.onelab.data.Type;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,7 +91,7 @@ public class ConditionStatementBuilder {
 
   private Object sqlValue(Object value) {
     Condition c = co.getCondition();
-    if (c.type().isDate() && value instanceof String) {
+    if (Type.isDate(c.type()) && value instanceof String) {
       return c.type().parseDate(value.toString(), c.dateFormat());
     }
     return c.type().parse(value);

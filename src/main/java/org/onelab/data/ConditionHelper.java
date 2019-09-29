@@ -48,15 +48,13 @@ public class ConditionHelper {
 
     List<ConditionObject> conditionObjects = ConditionTypeStore.getConditionObjects(condition);
 
-    if (conditionObjects != null) {
-      for (ConditionObject conditionObject : conditionObjects) {
-        if (s.isEmpty()) {
-          s = ConditionStatementBuilder.build(conditionObject);
-        } else {
-          Statement statement = ConditionStatementBuilder.build(conditionObject);
-          if (!statement.isEmpty()) {
-            s.appendContent(AND).append(statement);
-          }
+    for (ConditionObject conditionObject : conditionObjects) {
+      if (s.isEmpty()) {
+        s = ConditionStatementBuilder.build(conditionObject);
+      } else {
+        Statement statement = ConditionStatementBuilder.build(conditionObject);
+        if (!statement.isEmpty()) {
+          s.appendContent(AND).append(statement);
         }
       }
     }

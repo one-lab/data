@@ -20,8 +20,15 @@ public class ConditionTypeStore {
   public static final Map<Class, List<Field>> store = new HashMap<Class, List<Field>>();
 
   public static List<ConditionObject> getConditionObjects(Object object) {
+
+    if (object == null){
+      return Collections.emptyList();
+    }
+
     Class conditionType = object.getClass();
+
     List<Field> fieldList = store.get(conditionType);
+
     if (fieldList == null) {
       synchronized (store) {
         fieldList = store.get(conditionType);
@@ -31,20 +38,25 @@ public class ConditionTypeStore {
         }
       }
     }
+
     return getConditionObjects(object, fieldList);
   }
 
   private static List<ConditionObject> getConditionObjects(Object object, List<Field> fieldList) {
+
     if (fieldList.isEmpty()){
-      return null;
+      return Collections.emptyList();
     }
+
     List<ConditionObject> conditionObjectList = new ArrayList<ConditionObject>(fieldList.size());
+
     for (Field field : fieldList){
       ConditionObject conditionObject = new ConditionObject(field,
                                                             BeanUtil.get(field, object),
                                                             field.getAnnotation(Condition.class));
       conditionObjectList.add(conditionObject);
     }
+
     return conditionObjectList;
   }
 

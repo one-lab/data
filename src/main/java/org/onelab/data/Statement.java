@@ -21,6 +21,10 @@ public class Statement {
     return init().appendContent(content);
   }
 
+  public static Statement init(Statement statement) {
+    return init().append(statement);
+  }
+
   public List params() {
     return params;
   }

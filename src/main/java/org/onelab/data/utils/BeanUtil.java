@@ -41,6 +41,7 @@ public class BeanUtil {
    * 为对象属性赋值
    */
   public static void set(Field field, Object o, Object value) {
+
     try {
       if (!field.isAccessible()) {
         field.setAccessible(true);
@@ -59,17 +60,26 @@ public class BeanUtil {
 
       Type type = Type.of(field.getType());
 
-      //属性是字符串，值是date
-      if (value instanceof Date && type == Type.STRING){
-        String format = Type.defaultFormat;
-        DateFormat dateFormat = field.getAnnotation(DateFormat.class);
-        if (dateFormat != null){
-          format = dateFormat.value();
+      if (type == Type.STRING){
+        // Date类型 包含 Timestamp
+        if (value instanceof Date ){
+          String format = Type.defaultFormat;
+          DateFormat dateFormat = field.getAnnotation(DateFormat.class);
+          if (dateFormat != null){
+            format = dateFormat.value();
+          }
+          field.set(o, Type.dateToString((Date) value, format));
+          return;
         }
-        field.set(o, type.toDateString((Date) value, format));
-      } else {
-        field.set(o, type.parse(value));
+        // byte[] 类型
+        if (value instanceof byte[]){
+          field.set(o, Type.byteToString((byte[]) value));
+          return;
+        }
       }
+
+      field.set(o, type.parse(value));
+
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }

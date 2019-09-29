@@ -1,5 +1,6 @@
 package org.onelab.data;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -11,7 +12,7 @@ import java.util.Date;
  */
 public enum Type {
 
-  DATE, TIMESTAMP, STRING, BIGDECIMAL, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, DEFAULT;
+  DATE, TIMESTAMP, STRING, BIGDECIMAL, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT,BYTES, DOUBLE, DEFAULT;
 
   public static final String defaultFormat = "yyyy-MM-dd HH:mm:ss";
 
@@ -50,8 +51,30 @@ public enum Type {
       if (t == Timestamp.class){
         return TIMESTAMP;
       }
+      if (t == byte[].class){
+        return BYTES;
+      }
     }
     return DEFAULT;
+  }
+
+  public static boolean isDate(Type type){
+    return type==DATE || type==TIMESTAMP;
+  }
+
+  public static String dateToString(Date o, String format) {
+    if (format == null || format.length() == 0) {
+      format = defaultFormat;
+    }
+    return new SimpleDateFormat(format).format(o);
+  }
+
+  public static String byteToString(byte[] o) {
+    try {
+      return new String(o, "utf-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public Object parse(Object o) {
@@ -76,12 +99,15 @@ public enum Type {
         return o == null ? null : new BigDecimal(o.toString());
       case STRING:
         return o == null ? null : o.toString();
+      case BYTES:
+        if (o == null){
+          return null;
+        }
+        if (o instanceof String){
+          return ((String) o).getBytes();
+        }
     }
     return o;
-  }
-
-  public boolean isDate(){
-    return this==DATE || this==TIMESTAMP;
   }
 
   public Date parseDate(String o, String format) {
@@ -97,12 +123,4 @@ public enum Type {
       throw new RuntimeException("字符串转日期出错：format=" + format + " value=" + o, e);
     }
   }
-
-  public String toDateString(Date o, String format) {
-    if (format == null || format.length() == 0) {
-      format = defaultFormat;
-    }
-    return new SimpleDateFormat(format).format(o);
-  }
-
 }
