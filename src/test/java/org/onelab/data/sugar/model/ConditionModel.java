@@ -2,7 +2,7 @@ package org.onelab.data.sugar.model;
 
 import org.onelab.data.condition.Condition;
 import org.onelab.data.condition.Operation;
-import org.onelab.data.condition.Type;
+import org.onelab.data.Type;
 
 /**
  * @author Chunliang.Han on 2019-09-27.

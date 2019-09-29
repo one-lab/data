@@ -90,7 +90,7 @@ public class ConditionStatementBuilder {
 
   private Object sqlValue(Object value) {
     Condition c = co.getCondition();
-    if (c.type() == Type.DATE && value instanceof String) {
+    if (c.type().isDate() && value instanceof String) {
       return c.type().parseDate(value.toString(), c.dateFormat());
     }
     return c.type().parse(value);

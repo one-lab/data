@@ -1,5 +1,7 @@
 package org.onelab.data.condition;
 
+import org.onelab.data.Type;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
